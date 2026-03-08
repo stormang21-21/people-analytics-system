@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Test</title>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; }
+        img { max-width: 100%; border: 2px solid #0f0; }
+        .status { margin: 10px 0; padding: 10px; background: #333; }
+    </style>
+</head>
+<body>
+    <h1>Video Feed Test</h1>
+    <div class="status" id="status">Loading...</div>
+    <img id="video" src="/video_feed" alt="Video feed" onload="document.getElementById('status').textContent='Video loaded successfully'" onerror="document.getElementById('status').textContent='Error loading video'">
+    <p>If you see a green-bordered image above, video is working.</p>
+</body>
+</html>

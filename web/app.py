@@ -210,6 +210,11 @@ system.add_camera(
 )
 
 # Routes
+@app.route('/test_video')
+def test_video():
+    """Test video feed page"""
+    return render_template('test_video.html')
+
 @app.route('/')
 @requires_auth
 def index():
