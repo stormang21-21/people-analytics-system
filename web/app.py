@@ -258,12 +258,13 @@ class AnalyticsSystem:
                         
                         (tw, th), _ = cv2.getTextSize(label, font, font_scale, thickness)
                         
-                        # Draw black background
                         # Calculate vertical offset for multiple tracks
                         y_offset = i * 30
-
+                        
+                        # Draw black background
+                        cv2.rectangle(annotated_frame, 
                                     (x1, y1 - th - 8 - y_offset), 
-                                    (x1 + tw + 8, y1), 
+                                    (x1 + tw + 8, y1 - y_offset), 
                                     (0, 0, 0), -1)
                         
                         # Draw text in bright cyan
