@@ -205,6 +205,7 @@ class AnalyticsSystem:
                             if self.settings_manager.is_enabled('actions') and self.action_classifier:
                                 print(f"Action recognition enabled, classifying {len(poses)} poses...")
                                 for pose, track in zip(poses, tracks):
+                                    print(f"Classifying track {track.id} with pose: {len(pose.get('keypoints', []))} keypoints")
                                     action = self.action_classifier.update(track.id, pose)
                                     actions[track.id] = action
                                     print(f"Track {track.id}: action = {action}")
