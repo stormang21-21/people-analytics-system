@@ -11,7 +11,7 @@ import time
 class ActionClassifier:
     """Classify human actions from pose sequences"""
     
-    ACTIONS = ['standing', 'walking', 'sitting', 'texting', 'falling', 'fighting', 'loitering']
+    ACTIONS = ['standing', 'walking', 'sitting', 'laying_down', 'texting', 'falling', 'fighting', 'loitering']
     
     def __init__(self, history_size: int = 30):
         self.history_size = history_size
@@ -99,6 +99,14 @@ class ActionClassifier:
         
         if hip_y_avg > knee_y - 20 and all(kp[2] > 0.5 for kp in [left_hip, right_hip, left_knee, right_knee]):
             return 'sitting'
+        
+        # Check for laying down (torso is horizontal - shoulder and hip at similar height, both low)
+        shoulder_y = (left_shoulder[1] + right_shoulder[1]) / 2
+        torso_angle = abs(shoulder_y - hip_y_avg)
+        
+        # If torso is relatively flat (shoulders and hips at similar height) and low in frame
+        if torso_angle < 50 and hip_y_avg > 200 and all(kp[2] > 0.5 for kp in [left_shoulder, right_shoulder, left_hip, right_hip]):
+            return 'laying_down'
         
         # Check movement from history
         if len(pose_history) >= 5:
