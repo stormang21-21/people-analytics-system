@@ -154,7 +154,12 @@ class AnalyticsSystem:
                 frame = self.camera.get_frame()
                 if frame is not None:
                     # Detect people and objects
-                    detections = self.detector.detect_with_objects(frame)
+                    detections = self.detector.detect_with_objects(frame, conf_threshold=0.3)
+                    
+                    # Debug: print what objects are detected
+                    if detections['objects']:
+                        object_names = [d['class_name'] for d in detections['objects']]
+                        print(f"Objects detected: {object_names}")
                     
                     # Track
                     tracks = self.tracker.update(detections['people'])
@@ -165,7 +170,10 @@ class AnalyticsSystem:
                     # Draw annotations
                     annotated_frame = frame.copy()
                     
-                    # Face recognition
+                    # Draw all detections (people + objects like dogs)
+                    annotated_frame = self.detector.draw_detections(
+                        annotated_frame, detections['all_detections']
+                    )
                     if self.face_recognizer:
                         try:
                             annotated_frame, faces = self.face_recognizer.process_frame(annotated_frame, draw=True)
@@ -209,9 +217,6 @@ class AnalyticsSystem:
                         for track in tracks
                     }
                     self.analytics.record(current_time, len(tracks), zone_occupancy, dwell_times)
-                    annotated_frame = self.detector.draw_detections(
-                        annotated_frame, detections['all_detections']
-                    )
                     annotated_frame = self.dwell_tracker.draw_zones(annotated_frame)
                     
                     # Add track IDs and dwell times
