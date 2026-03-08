@@ -76,10 +76,12 @@ class PoseEstimator:
                 
                 # Extract keypoints
                 kp = kpts.xy.cpu().numpy()
-                kp_conf = kpts.conf.cpu().numpy() if hasattr(kpts, 'conf') else np.ones(len(kp))
+                kp_conf = kpts.conf.cpu().numpy() if hasattr(kpts, 'conf') else np.ones(kp.shape[0])
                 
                 keypoint_list = []
-                for j, (point, pc) in enumerate(zip(kp, kp_conf)):
+                for j in range(kp.shape[0]):
+                    point = kp[j]
+                    pc = kp_conf[j] if j < len(kp_conf) else 1.0
                     if len(point) >= 2:
                         keypoint_list.append([float(point[0]), float(point[1]), float(pc)])
                     else:
