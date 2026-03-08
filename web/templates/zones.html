@@ -408,15 +408,24 @@
         
         // Set canvas size
         function resizeCanvas() {
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
-            console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
-            redraw();
+            const container = document.querySelector('.video-container');
+            if (container) {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+                console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
+                redraw();
+            } else {
+                console.error('Video container not found');
+            }
         }
         
+        // Delay initialization to ensure DOM is ready
+        setTimeout(function() {
+            resizeCanvas();
+            console.log('Canvas initialized');
+        }, 500);
+        
         window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
         
         // Color picker
         document.querySelectorAll('.color-option').forEach(option => {
@@ -428,19 +437,25 @@
         });
         
         // Canvas click
-        canvas.addEventListener('click', function(e) {
-            console.log('Canvas clicked', e.clientX, e.clientY);
-            console.log('Canvas size:', canvas.width, 'x', canvas.height);
+        // Simple click handler
+canvas.onclick = function(e) {
+            console.log('CLICK!');
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            console.log('Click position:', x, y);
+            const x = Math.round(e.clientX - rect.left);
+            const y = Math.round(e.clientY - rect.top);
+            console.log('Position:', x, y);
             
-            points.push([Math.round(x), Math.round(y)]);
-            document.getElementById('point-count').textContent = `${points.length} points`;
-            redraw();
-            console.log('Point added:', points);
-        });
+            points.push([x, y]);
+            document.getElementById('point-count').textContent = points.length + ' points';
+            
+            // Draw point immediately
+            ctx.fillStyle = '#4a9eff';
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            console.log('Points:', points);
+        };
         
         // Ensure canvas captures clicks even over video
         canvas.style.pointerEvents = 'auto';
