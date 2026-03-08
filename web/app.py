@@ -244,9 +244,9 @@ class AnalyticsSystem:
                         
                         # Draw track ID with better readability
                         action_str = actions.get(track.id, "")
-                            label = f"ID: {track.id}"
-                            if action_str:
-                                label += f" | {action_str}"
+                        label = f"ID: {track.id}"
+                        if action_str:
+                            label += f" | {action_str}"
                         if dwell_times:
                             dwell_str = ", ".join([f"{z}:{t:.0f}s" 
                                                    for z, t in dwell_times.items()])
