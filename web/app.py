@@ -57,7 +57,11 @@ from src.alert_system import AlertSystem, AlertType
 from src.analytics import Analytics
 from src.face_recognition import FaceRecognizer
 
-app = Flask(__name__)
+# Static folder setup
+static_folder = os.path.join(os.path.dirname(__file__), '..', 'static')
+os.makedirs(static_folder, exist_ok=True)
+
+app = Flask(__name__, static_folder=static_folder)
 app.config['SECRET_KEY'] = 'people-analytics-secret'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
