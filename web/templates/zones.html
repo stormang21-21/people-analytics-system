@@ -360,8 +360,10 @@
         
         // Set canvas size
         function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
             redraw();
         }
         
@@ -379,6 +381,7 @@
         
         // Canvas click
         canvas.addEventListener('click', function(e) {
+            console.log('Canvas clicked', e.clientX, e.clientY);
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -386,7 +389,11 @@
             points.push([Math.round(x), Math.round(y)]);
             document.getElementById('point-count').textContent = `${points.length} points`;
             redraw();
+            console.log('Point added:', points);
         });
+        
+        // Ensure canvas captures clicks even over video
+        canvas.style.pointerEvents = 'auto';
         
         let currentMode = 'video';
         
