@@ -154,26 +154,32 @@ class AnalyticsSystem:
                     # Update dwell times
                     self.dwell_tracker.update(tracks)
                     
+                    # Draw annotations
+                    annotated_frame = frame.copy()
+                    
                     # Pose estimation and action classification
                     actions = {}
                     if self.pose_estimator:
-                        poses = self.pose_estimator.estimate(frame)
-                        annotated_frame = self.pose_estimator.draw_poses(annotated_frame, poses)
-                        
-                        # Classify actions
-                        if self.action_classifier:
-                            for pose, track in zip(poses, tracks):
-                                action = self.action_classifier.update(track.id, pose)
-                                actions[track.id] = action
-                                
-                                # Check for alerts
-                                if action == "falling":
-                                    self.alert_system.check_fall(track.id, action)
+                        try:
+                            poses = self.pose_estimator.estimate(frame)
+                            annotated_frame = self.pose_estimator.draw_poses(annotated_frame, poses)
                             
-                            # Check for fights
-                            fighter_ids = self.action_classifier.check_fighting(poses, tracks)
-                            if fighter_ids:
-                                self.alert_system.check_fight(fighter_ids)
+                            # Classify actions
+                            if self.action_classifier:
+                                for pose, track in zip(poses, tracks):
+                                    action = self.action_classifier.update(track.id, pose)
+                                    actions[track.id] = action
+                                    
+                                    # Check for alerts
+                                    if action == "falling":
+                                        self.alert_system.check_fall(track.id, action)
+                                
+                                # Check for fights
+                                fighter_ids = self.action_classifier.check_fighting(poses, tracks)
+                                if fighter_ids:
+                                    self.alert_system.check_fight(fighter_ids)
+                        except Exception as e:
+                            print(f"Pose/Action error: {e}")
                     
                     # Record analytics
                     current_time = time.time()
@@ -186,9 +192,6 @@ class AnalyticsSystem:
                         for track in tracks
                     }
                     self.analytics.record(current_time, len(tracks), zone_occupancy, dwell_times)
-                    
-                    # Draw annotations
-                    annotated_frame = frame.copy()
                     annotated_frame = self.detector.draw_detections(
                         annotated_frame, detections['all_detections']
                     )
