@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Video Analytics</title>
+    <title>Settings - Video Analytics System</title>
     <style>
         * {
             margin: 0;
@@ -26,12 +26,6 @@
             align-items: center;
             border-bottom: 1px solid #2a2a3a;
         }
-        
-        .navbar h1 {
-            color: #4a9eff;
-            font-size: 1.5rem;
-        }
-        
         
         .logo {
             display: flex;
@@ -69,7 +63,7 @@
             color: #707080;
             font-weight: normal;
         }
-
+        
         .nav-links {
             display: flex;
             gap: 2rem;
@@ -86,7 +80,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 2rem;
         }
@@ -104,12 +98,17 @@
             color: #707080;
         }
         
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
         .settings-card {
             background: #1a1a24;
             border-radius: 12px;
             padding: 1.5rem;
             border: 1px solid #2a2a3a;
-            margin-bottom: 1.5rem;
         }
         
         .settings-card h3 {
@@ -118,52 +117,104 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 1.1rem;
         }
         
-        .form-group {
-            margin-bottom: 1.5rem;
+        .feature-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #2a2a3a;
         }
         
-        .form-group label {
-            display: block;
-            color: #a0a0b0;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+        .feature-item:last-child {
+            border-bottom: none;
         }
         
-        .resolution-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+        .feature-info {
+            flex: 1;
         }
         
-        .resolution-option {
-            background: #252535;
-            border: 2px solid #3a3a4a;
-            border-radius: 8px;
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-        
-        .resolution-option:hover {
-            border-color: #4a9eff;
-        }
-        
-        .resolution-option.selected {
-            border-color: #4a9eff;
-            background: #1a2a3a;
-        }
-        
-        .resolution-option h4 {
+        .feature-name {
             color: #e0e0e0;
-            margin-bottom: 0.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
-        .resolution-option p {
+        .feature-desc {
             color: #707080;
             font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+        
+        .feature-toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        
+        .feature-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #3a3a4a;
+            transition: .3s;
+            border-radius: 26px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        
+        .feature-toggle input:checked + .toggle-slider {
+            background-color: #4a9eff;
+        }
+        
+        .feature-toggle input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        .performance-indicator {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        
+        .perf-high {
+            background: #1a3a2a;
+            color: #4ade80;
+        }
+        
+        .perf-medium {
+            background: #3a3a1a;
+            color: #fbbf24;
+        }
+        
+        .perf-low {
+            background: #3a1a1a;
+            color: #f87171;
         }
         
         .btn {
@@ -173,12 +224,13 @@
             cursor: pointer;
             font-size: 0.9rem;
             transition: all 0.2s;
+            width: 100%;
+            margin-top: 1rem;
         }
         
         .btn-primary {
             background: #4a9eff;
             color: white;
-            width: 100%;
         }
         
         .btn-primary:hover {
@@ -198,42 +250,56 @@
             display: block;
         }
         
-        .status-message.error {
-            background: #3a1a1a;
-            color: #f87171;
-            display: block;
-        }
-        
         .info-box {
             background: #252535;
             border-radius: 8px;
             padding: 1rem;
-            margin-top: 1rem;
-            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
             color: #a0a0b0;
+            font-size: 0.9rem;
         }
         
         .info-box strong {
             color: #e0e0e0;
+        }
+        
+        .speed-indicator {
+            background: #1a1a24;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .speed-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4a9eff;
+        }
+        
+        .speed-label {
+            color: #707080;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="logo">
-                <div class="logo-icon">
-                    <img src="/static/logo.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='📹';" style="width: 100%; height: 100%; object-fit: contain;">
-                </div>
-                <div class="logo-text">
-                    <span class="logo-main">Video Analytics</span>
-                    <span class="logo-sub">System</span>
-                </div>
+            <div class="logo-icon">
+                <img src="/static/logo.jpg" onerror="this.style.display='none'; this.parentElement.innerHTML='📹';" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
+            <div class="logo-text">
+                <span class="logo-main">Video Analytics</span>
+                <span class="logo-sub">System</span>
+            </div>
+        </div>
         <div class="nav-links">
             <a href="/">Dashboard</a>
             <a href="/cameras">Cameras</a>
             <a href="/zones">Zones</a>
             <a href="/analytics">Analytics</a>
+            <a href="/faces">Faces</a>
             <a href="/settings" class="active">Settings</a>
         </div>
     </nav>
@@ -241,117 +307,293 @@
     <div class="container">
         <div class="page-header">
             <h2>Settings</h2>
-            <p>Configure system preferences</p>
+            <p>Enable/disable features to optimize performance</p>
         </div>
         
-        <div class="settings-card">
-            <h3>📹 Video Resolution</h3>
-            <p style="color: #707080; margin-bottom: 1rem;">Select camera stream quality</p>
-            
-            <div class="form-group">
-                <div class="resolution-options">
-                    <div class="resolution-option selected" data-res="high" onclick="selectResolution('high')">
-                        <h4>High Resolution</h4>
-                        <p>Main stream (ch. 101)<br>Better quality, longer range<br>More bandwidth</p>
+        <div class="info-box">
+            <strong>💡 Tip:</strong> Uncheck features you don't need to speed up processing. 
+            Each disabled feature reduces CPU usage and increases FPS.
+        </div>
+        
+        <div class="speed-indicator">
+            <div class="speed-value" id="performance-level">Medium</div>
+            <div class="speed-label">Expected Performance</div>
+        </div>
+        
+        <div class="settings-grid">
+            <div class="settings-card">
+                <h3>📹 Detection</h3>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Person Detection
+                            <span class="performance-indicator perf-high">Required</span>
+                        </div>
+                        <div class="feature-desc">Core person detection (always on)</div>
                     </div>
-                    <div class="resolution-option" data-res="low" onclick="selectResolution('low')">
-                        <h4>Low Resolution</h4>
-                        <p>Sub stream (ch. 102)<br>Faster processing<br>Less bandwidth</p>
+                    <label class="feature-toggle">
+                        <input type="checkbox" checked disabled>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Animal Detection
+                            <span class="performance-indicator perf-medium">Medium</span>
+                        </div>
+                        <div class="feature-desc">Detect dogs, cats, birds</div>
                     </div>
+                    <label class="feature-toggle">
+                        <input type="checkbox" id="feat-animals" checked onchange="updatePerformance()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Object Detection
+                            <span class="performance-indicator perf-medium">Medium</span>
+                        </div>
+                        <div class="feature-desc">Phones, laptops, backpacks, etc.</div>
+                    </div>
+                    <label class="feature-toggle">
+                        <input type="checkbox" id="feat-objects" checked onchange="updatePerformance()">
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
             </div>
             
-            <div class="info-box">
-                <strong>Current camera:</strong> <span id="current-camera">Loading...</span><br>
-                <strong>Current stream:</strong> <span id="current-stream">Loading...</span>
+            <div class="settings-card">
+                <h3>🎯 Advanced Features</h3>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Pose Estimation
+                            <span class="performance-indicator perf-low">Heavy</span>
+                        </div>
+                        <div class="feature-desc">17 keypoint skeleton tracking</div>
+                    </div>
+                    <label class="feature-toggle">
+                        <input type="checkbox" id="feat-pose" checked onchange="updatePerformance()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Action Recognition
+                            <span class="performance-indicator perf-low">Heavy</span>
+                        </div>
+                        <div class="feature-desc">Detect falling, texting, fighting</div>
+                    </div>
+                    <label class="feature-toggle">
+                        <input type="checkbox" id="feat-actions" checked onchange="updatePerformance()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Face Recognition
+                            <span class="performance-indicator perf-low">Heavy</span>
+                        </div>
+                        <div class="feature-desc">Identify known faces</div>
+                    </div>
+                    <label class="feature-toggle">
+                        <input type="checkbox" id="feat-faces" checked onchange="updatePerformance()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
             </div>
             
-            <button class="btn btn-primary" onclick="applySettings()">Apply Settings</button>
+            <div class="settings-card">
+                <h3>🔔 Alerts</h3>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Fall Detection
+                            <span class="performance-indicator perf-medium">Medium</span>
+                        </div>
+                        <div class="feature-desc">Alert when person falls</div>
+                    </div>
+                    <label class="feature-toggle">
+                        <input type="checkbox" id="feat-fall" checked onchange="updatePerformance()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Fight Detection
+                            <span class="performance-indicator perf-medium">Medium</span>
+                        </div>
+                        <div class="feature-desc">Alert on potential fights</div>
+                    </div>
+                    <label class="feature-toggle">
+                        <input type="checkbox" id="feat-fight" checked onchange="updatePerformance()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Loitering Detection
+                            <span class="performance-indicator perf-high">Light</span>
+                        </div>
+                        <div class="feature-desc">Alert on prolonged presence</div>
+                    </div>
+                    <label class="feature-toggle">
+                        <input type="checkbox" id="feat-loiter" checked onchange="updatePerformance()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
             
-            <div id="status-message" class="status-message"></div>
+            <div class="settings-card">
+                <h3>📊 Analytics</h3>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Dwell Time Tracking
+                            <span class="performance-indicator perf-high">Light</span>
+                        </div>
+                        <div class="feature-desc">Track time in zones</div>
+                    </div>
+                    <label class="feature-toggle">
+                        <input type="checkbox" id="feat-dwell" checked onchange="updatePerformance()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">
+                            Data Analytics
+                            <span class="performance-indicator perf-high">Light</span>
+                        </div>
+                        <div class="feature-desc">Hourly/daily reports</div>
+                    </div>
+                    <label class="feature-toggle">
+                        <input type="checkbox" id="feat-analytics" checked onchange="updatePerformance()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
         </div>
         
-        <div class="settings-card">
-            <h3>🔔 Alert Settings</h3>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="alert-fall" checked> Fall Detection
-                </label>
-            </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="alert-fight" checked> Fight Detection
-                </label>
-            </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="alert-loitering" checked> Loitering Detection
-                </label>
-            </div>
-        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        
+        <div id="status-message" class="status-message"></div>
     </div>
     
     <script>
-        let selectedResolution = 'high';
-        
-        function selectResolution(res) {
-            selectedResolution = res;
-            document.querySelectorAll('.resolution-option').forEach(opt => {
-                opt.classList.remove('selected');
+        function updatePerformance() {
+            const heavyFeatures = ['feat-pose', 'feat-actions', 'feat-faces'];
+            const mediumFeatures = ['feat-animals', 'feat-objects', 'feat-fall', 'feat-fight'];
+            
+            let heavyCount = 0;
+            let mediumCount = 0;
+            
+            heavyFeatures.forEach(id => {
+                if (document.getElementById(id).checked) heavyCount++;
             });
-            document.querySelector(`[data-res="${res}"]`).classList.add('selected');
-        }
-        
-        async function loadCurrentSettings() {
-            try {
-                const response = await fetch('/api/cameras');
-                const cameras = await response.json();
-                
-                const cam = Object.values(cameras)[0];
-                if (cam) {
-                    document.getElementById('current-camera').textContent = cam.name;
-                    const isHighRes = cam.url.includes('/101/');
-                    document.getElementById('current-stream').textContent = isHighRes ? 'High Resolution (ch. 101)' : 'Low Resolution (ch. 102)';
-                    
-                    // Update selection
-                    selectResolution(isHighRes ? 'high' : 'low');
-                }
-            } catch (e) {
-                console.error('Failed to load settings:', e);
+            
+            mediumFeatures.forEach(id => {
+                if (document.getElementById(id).checked) mediumCount++;
+            });
+            
+            const perfIndicator = document.getElementById('performance-level');
+            
+            if (heavyCount === 0 && mediumCount <= 1) {
+                perfIndicator.textContent = 'Fast';
+                perfIndicator.style.color = '#4ade80';
+            } else if (heavyCount <= 1 && mediumCount <= 2) {
+                perfIndicator.textContent = 'Medium';
+                perfIndicator.style.color = '#4a9eff';
+            } else {
+                perfIndicator.textContent = 'Heavy';
+                perfIndicator.style.color = '#f87171';
             }
         }
         
-        async function applySettings() {
+        async function saveSettings() {
+            const settings = {
+                animals: document.getElementById('feat-animals').checked,
+                objects: document.getElementById('feat-objects').checked,
+                pose: document.getElementById('feat-pose').checked,
+                actions: document.getElementById('feat-actions').checked,
+                faces: document.getElementById('feat-faces').checked,
+                fall: document.getElementById('feat-fall').checked,
+                fight: document.getElementById('feat-fight').checked,
+                loiter: document.getElementById('feat-loiter').checked,
+                dwell: document.getElementById('feat-dwell').checked,
+                analytics: document.getElementById('feat-analytics').checked
+            };
+            
             const statusDiv = document.getElementById('status-message');
             statusDiv.className = 'status-message';
-            statusDiv.textContent = 'Applying settings...';
+            statusDiv.textContent = 'Saving...';
             statusDiv.style.display = 'block';
             
             try {
-                const response = await fetch('/api/settings/resolution', {
+                const response = await fetch('/api/settings/features', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ resolution: selectedResolution })
+                    body: JSON.stringify(settings)
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
                     statusDiv.className = 'status-message success';
-                    statusDiv.textContent = 'Settings applied! Reconnecting camera...';
-                    setTimeout(() => location.reload(), 2000);
+                    statusDiv.textContent = '✅ Settings saved! Restart processing to apply changes.';
                 } else {
                     statusDiv.className = 'status-message error';
-                    statusDiv.textContent = 'Failed: ' + (result.error || 'Unknown error');
+                    statusDiv.textContent = '❌ Failed: ' + (result.error || 'Unknown error');
                 }
             } catch (e) {
                 statusDiv.className = 'status-message error';
-                statusDiv.textContent = 'Error: ' + e.message;
+                statusDiv.textContent = '❌ Error: ' + e.message;
             }
         }
         
         // Load current settings on page load
-        loadCurrentSettings();
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings/features');
+                const settings = await response.json();
+                
+                if (settings) {
+                    document.getElementById('feat-animals').checked = settings.animals !== false;
+                    document.getElementById('feat-objects').checked = settings.objects !== false;
+                    document.getElementById('feat-pose').checked = settings.pose !== false;
+                    document.getElementById('feat-actions').checked = settings.actions !== false;
+                    document.getElementById('feat-faces').checked = settings.faces !== false;
+                    document.getElementById('feat-fall').checked = settings.fall !== false;
+                    document.getElementById('feat-fight').checked = settings.fight !== false;
+                    document.getElementById('feat-loiter').checked = settings.loiter !== false;
+                    document.getElementById('feat-dwell').checked = settings.dwell !== false;
+                    document.getElementById('feat-analytics').checked = settings.analytics !== false;
+                    
+                    updatePerformance();
+                }
+            } catch (e) {
+                console.error('Failed to load settings:', e);
+            }
+        }
+        
+        loadSettings();
     </script>
 </body>
 </html>

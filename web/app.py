@@ -56,6 +56,7 @@ from src.action_classifier import ActionClassifier
 from src.alert_system import AlertSystem, AlertType
 from src.analytics import Analytics
 from src.face_recognition import FaceRecognizer
+from src.settings_manager import SettingsManager
 
 # Static folder setup
 static_folder = os.path.join(os.path.dirname(__file__), '..', 'static')
@@ -76,6 +77,7 @@ class AnalyticsSystem:
         self.alert_system = AlertSystem()
         self.analytics = Analytics()
         self.face_recognizer = None
+        self.settings_manager = SettingsManager()
         self.camera = None
         self.is_running = False
         self.frame = None
@@ -169,8 +171,9 @@ class AnalyticsSystem:
                     # Track
                     tracks = self.tracker.update(detections['people'])
                     
-                    # Update dwell times
-                    self.dwell_tracker.update(tracks)
+                    # Update dwell times (if enabled)
+                    if self.settings_manager.is_enabled('dwell'):
+                        self.dwell_tracker.update(tracks)
                     
                     # Draw annotations
                     annotated_frame = frame.copy()
@@ -187,41 +190,44 @@ class AnalyticsSystem:
                         except Exception as e:
                             print(f"Face recognition error: {e}")
                     
-                    # Pose estimation and action classification
+                    # Pose estimation and action classification (if enabled)
                     actions = {}
-                    if self.pose_estimator:
+                    if self.settings_manager.is_enabled('pose') and self.pose_estimator:
                         try:
                             poses = self.pose_estimator.estimate(frame)
-                            annotated_frame = self.pose_estimator.draw_poses(annotated_frame, poses)
+                            if self.settings_manager.is_enabled('pose'):
+                                annotated_frame = self.pose_estimator.draw_poses(annotated_frame, poses)
                             
-                            # Classify actions
-                            if self.action_classifier:
+                            # Classify actions (if enabled)
+                            if self.settings_manager.is_enabled('actions') and self.action_classifier:
                                 for pose, track in zip(poses, tracks):
                                     action = self.action_classifier.update(track.id, pose)
                                     actions[track.id] = action
                                     
-                                    # Check for alerts
-                                    if action == "falling":
+                                    # Check for alerts (if enabled)
+                                    if self.settings_manager.is_enabled('fall') and action == "falling":
                                         self.alert_system.check_fall(track.id, action)
                                 
-                                # Check for fights
-                                fighter_ids = self.action_classifier.check_fighting(poses, tracks)
-                                if fighter_ids:
-                                    self.alert_system.check_fight(fighter_ids)
+                                # Check for fights (if enabled)
+                                if self.settings_manager.is_enabled('fight'):
+                                    fighter_ids = self.action_classifier.check_fighting(poses, tracks)
+                                    if fighter_ids:
+                                        self.alert_system.check_fight(fighter_ids)
                         except Exception as e:
                             print(f"Pose/Action error: {e}")
                     
-                    # Record analytics
-                    current_time = time.time()
-                    zone_occupancy = {
-                        zid: stats['current_occupancy'] 
-                        for zid, stats in self.dwell_tracker.get_zone_analytics().items()
-                    }
-                    dwell_times = {
-                        track.id: self.dwell_tracker.get_dwell_times(track.id)
-                        for track in tracks
-                    }
-                    self.analytics.record(current_time, len(tracks), zone_occupancy, dwell_times)
+                    # Record analytics (if enabled)
+                    if self.settings_manager.is_enabled('analytics'):
+                        current_time = time.time()
+                        zone_occupancy = {
+                            zid: stats['current_occupancy'] 
+                            for zid, stats in self.dwell_tracker.get_zone_analytics().items()
+                        }
+                        dwell_times = {
+                            track.id: self.dwell_tracker.get_dwell_times(track.id)
+                            for track in tracks
+                        }
+                        self.analytics.record(current_time, len(tracks), zone_occupancy, dwell_times)
                     annotated_frame = self.dwell_tracker.draw_zones(annotated_frame)
                     
                     # Add track IDs and dwell times
@@ -571,6 +577,19 @@ def add_face():
     system.face_recognizer.add_known_face(name, face_img)
     
     return jsonify({'success': True, 'name': name, 'faces_detected': len(faces)})
+
+
+@app.route('/api/settings/features', methods=['GET'])
+def get_feature_settings():
+    """Get current feature settings"""
+    return jsonify(system.settings_manager.get_all())
+
+@app.route('/api/settings/features', methods=['POST'])
+def set_feature_settings():
+    """Update feature settings"""
+    data = request.json
+    success = system.settings_manager.update(data)
+    return jsonify({'success': success})
 
 # Video feed
 @app.route('/video_feed')
