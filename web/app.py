@@ -512,22 +512,29 @@ def add_face():
     if not name:
         return jsonify({'success': False, 'error': 'Name required'})
     
-    if not system.frame:
-        return jsonify({'success': False, 'error': 'No video frame available'})
-    
     if not system.face_recognizer:
         return jsonify({'success': False, 'error': 'Face recognition not available'})
     
+    # Get frame from camera or system
+    frame = None
+    if system.camera and system.camera.is_alive():
+        frame = system.camera.get_frame()
+    elif system.frame is not None:
+        frame = system.frame
+    
+    if frame is None:
+        return jsonify({'success': False, 'error': 'No video frame available. Make sure camera is connected and video is streaming.'})
+    
     # Detect faces in current frame
-    faces = system.face_recognizer.detect_faces(system.frame)
+    faces = system.face_recognizer.detect_faces(frame)
     
     if not faces:
-        return jsonify({'success': False, 'error': 'No face detected'})
+        return jsonify({'success': False, 'error': 'No face detected. Make sure face is clearly visible.'})
     
     # Use the first detected face
     face = faces[0]
     x, y, w, h = face['bbox']
-    face_img = system.frame[y:y+h, x:x+w]
+    face_img = frame[y:y+h, x:x+w]
     
     if face_img.size == 0:
         return jsonify({'success': False, 'error': 'Invalid face region'})
