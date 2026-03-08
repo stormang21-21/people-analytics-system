@@ -1,0 +1,70 @@
+# Video Analytics System - Applied Settings
+# Saved: 2026-03-08
+
+system:
+  name: "Video Analytics System"
+  version: "1.0"
+  port: 5003
+
+camera:
+  default_camera: "cam_01"
+  stream_url: "rtsp://admin:PRZROZ@192.168.6.93:554/Streaming/channels/102/"
+  resolution: "high"  # or "low" for sub-stream
+  reconnect_attempts: 10
+  frame_timeout: 5
+
+detection:
+  model: "yolov8n"
+  confidence_threshold: 0.3
+  detect_classes:
+    - person
+    - dog
+    - cat
+    - bird
+    - and 76 other COCO classes
+
+features:
+  person_detection: true
+  multi_object_tracking: true
+  dwell_time_tracking: true
+  pose_estimation: true
+  action_recognition: true
+  face_recognition: true
+  alert_system: true
+  analytics: true
+  zoom_controls: true
+
+alerts:
+  fall_detection: true
+  fight_detection: true
+  loitering_detection: true
+
+ui:
+  logo: "static/logo.jpg"
+  text_size: 0.8
+  theme: "dark"
+
+zoom:
+  min: 0.5
+  max: 3.0
+  step: 0.25
+  default: 1.0
+
+api_endpoints:
+  - /api/cameras
+  - /api/zones
+  - /api/alerts
+  - /api/analytics/current
+  - /api/analytics/daily
+  - /api/analytics/export
+  - /api/faces
+  - /api/faces/add
+  - /api/settings/resolution
+
+pages:
+  - Dashboard (/)
+  - Cameras (/cameras)
+  - Zones (/zones)
+  - Analytics (/analytics)
+  - Faces (/faces)
+  - Settings (/settings)
