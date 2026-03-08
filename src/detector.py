@@ -101,7 +101,10 @@ class YOLO26Detector:
         """Draw bounding boxes on frame"""
         if color_map is None:
             color_map = {
-                'person': (0, 255, 0),
+                'person': (0, 255, 0),      # Green
+                'dog': (255, 165, 0),       # Orange
+                'cat': (255, 192, 203),     # Pink
+                'bird': (0, 191, 255),      # Deep sky blue
                 'cell phone': (255, 0, 0),
                 'laptop': (0, 0, 255),
                 'backpack': (255, 255, 0),
