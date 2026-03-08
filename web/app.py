@@ -200,6 +200,14 @@ class AnalyticsSystem:
 # Global system instance
 system = AnalyticsSystem()
 
+# Add default IP camera
+system.add_camera(
+    camera_id="cam_01",
+    name="Main Camera",
+    url="rtsp://admin:PRZROZ@192.168.6.93:554/Streaming/channels/102/",
+    camera_type="ip"
+)
+
 # Routes
 @app.route('/')
 @requires_auth
