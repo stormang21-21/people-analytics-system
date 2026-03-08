@@ -118,12 +118,39 @@ class YOLO26Detector:
             # Draw box
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
             
-            # Draw label
+            # Draw label with better readability
             label = f"{class_name} {conf:.2f}"
-            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-            cv2.rectangle(frame, (x1, y1-th-10), (x1+tw, y1), color, -1)
-            cv2.putText(frame, label, (x1, y1-5), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            font_scale = 0.6
+            font_thickness = 2
+            
+            (tw, th), _ = cv2.getTextSize(label, font, font_scale, font_thickness)
+            
+            # Draw background rectangle with padding
+            padding = 4
+            bg_x1 = x1
+            bg_y1 = y1 - th - padding * 2
+            bg_x2 = x1 + tw + padding * 2
+            bg_y2 = y1
+            
+            # Ensure background stays within frame
+            if bg_y1 < 0:
+                bg_y1 = y1
+                bg_y2 = y1 + th + padding * 2
+            
+            # Draw solid black background for contrast
+            cv2.rectangle(frame, (bg_x1, bg_y1), (bg_x2, bg_y2), (0, 0, 0), -1)
+            
+            # Draw text with outline for better visibility
+            text_x = bg_x1 + padding
+            text_y = bg_y2 - padding if bg_y1 < 0 else bg_y1 + th + padding
+            
+            # Draw outline (black border around text)
+            outline_color = (0, 0, 0)
+            cv2.putText(frame, label, (text_x, text_y), font, font_scale, outline_color, font_thickness + 2)
+            
+            # Draw main text in white
+            cv2.putText(frame, label, (text_x, text_y), font, font_scale, (255, 255, 255), font_thickness)
         
         return frame
 

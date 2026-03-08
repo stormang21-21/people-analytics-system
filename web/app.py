@@ -224,16 +224,29 @@ class AnalyticsSystem:
                         x1, y1, x2, y2 = map(int, track.bbox)
                         dwell_times = self.dwell_tracker.get_dwell_times(track.id)
                         
-                        # Draw track ID
+                        # Draw track ID with better readability
                         label = f"ID: {track.id}"
                         if dwell_times:
                             dwell_str = ", ".join([f"{z}:{t:.0f}s" 
                                                    for z, t in dwell_times.items()])
                             label += f" | {dwell_str}"
                         
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                        font_scale = 0.6
+                        thickness = 2
+                        
+                        (tw, th), _ = cv2.getTextSize(label, font, font_scale, thickness)
+                        
+                        # Draw black background
+                        cv2.rectangle(annotated_frame, 
+                                    (x1, y1 - th - 8), 
+                                    (x1 + tw + 8, y1), 
+                                    (0, 0, 0), -1)
+                        
+                        # Draw text in bright cyan
                         cv2.putText(annotated_frame, label, 
-                                  (x1, y1 - 10),
-                                  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
+                                  (x1 + 4, y1 - 4),
+                                  font, font_scale, (0, 255, 255), thickness)
                     
                     self.frame = annotated_frame
                     
