@@ -1,0 +1,28 @@
+# Camera Configuration
+# Add your IP cameras here
+
+cameras:
+  cam_01:
+    name: "Main Camera"
+    url: "rtsp://admin:PRZROZ@192.168.6.93:554/Streaming/channels/102/"
+    type: "ip"
+    enabled: true
+    
+  # Example additional cameras:
+  # cam_02:
+  #   name: "Entrance Camera"
+  #   url: "rtsp://user:pass@192.168.1.101:554/stream"
+  #   type: "ip"
+  #   enabled: false
+  #
+  # cam_03:
+  #   name: "USB Camera"
+  #   url: "/dev/video0"
+  #   type: "usb"
+  #   enabled: false
+
+# Default settings
+defaults:
+  fps: 15
+  resolution: "1920x1080"
+  codec: "H264"
