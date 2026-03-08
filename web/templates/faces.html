@@ -32,6 +32,44 @@
             font-size: 1.5rem;
         }
         
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #4a9eff;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4a9eff 0%, #2563eb 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        
+        .logo-main {
+            font-size: 1.2rem;
+            color: #4a9eff;
+        }
+        
+        .logo-sub {
+            font-size: 0.7rem;
+            color: #707080;
+            font-weight: normal;
+        }
+
         .nav-links {
             display: flex;
             gap: 2rem;
@@ -192,7 +230,13 @@
 </head>
 <body>
     <nav class="navbar">
-        <h1>📹 Video Analytics System</h1>
+        <div class="logo">
+                <div class="logo-icon">📹</div>
+                <div class="logo-text">
+                    <span class="logo-main">Video Analytics</span>
+                    <span class="logo-sub">System</span>
+                </div>
+            </div>
         <div class="nav-links">
             <a href="/">Dashboard</a>
             <a href="/cameras">Cameras</a>
