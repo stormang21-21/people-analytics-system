@@ -430,9 +430,11 @@
         // Canvas click
         canvas.addEventListener('click', function(e) {
             console.log('Canvas clicked', e.clientX, e.clientY);
+            console.log('Canvas size:', canvas.width, 'x', canvas.height);
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
+            console.log('Click position:', x, y);
             
             points.push([Math.round(x), Math.round(y)]);
             document.getElementById('point-count').textContent = `${points.length} points`;
@@ -472,8 +474,21 @@
         function redraw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw grid only if in grid mode or video failed
-            if (currentMode === 'grid' || document.getElementById('live-video').style.display === 'none') {
+            // Always draw grid for reference
+            ctx.strokeStyle = '#2a2a3a';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
                 ctx.strokeStyle = '#2a2a3a';
                 ctx.lineWidth = 1;
                 for (let x = 0; x < canvas.width; x += 50) {
