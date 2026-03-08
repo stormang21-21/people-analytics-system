@@ -645,9 +645,18 @@
         let selectedResolution = 'high';
         
         function selectResolution(res) {
+            console.log('Selecting resolution:', res);
             selectedResolution = res;
-            document.querySelectorAll('.resolution-option').forEach(opt => opt.classList.remove('selected'));
-            document.getElementById('res-' + res).classList.add('selected');
+            document.querySelectorAll('.resolution-option').forEach(opt => {
+                opt.classList.remove('selected');
+                opt.style.borderColor = '#3a3a4a';
+                opt.style.background = '#252535';
+            });
+            const selected = document.getElementById('res-' + res);
+            selected.classList.add('selected');
+            selected.style.borderColor = '#4a9eff';
+            selected.style.background = '#1a2a3a';
+            console.log('Selected:', selected);
         }
         
         async function loadCameraInfo() {
