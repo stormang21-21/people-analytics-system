@@ -128,7 +128,7 @@ class YOLO26Detector:
             # Draw label with better readability
             label = f"{class_name} {conf:.2f}"
             font = cv2.FONT_HERSHEY_SIMPLEX
-            font_scale = 0.8
+            font_scale = 0.7
             font_thickness = 2
             
             (tw, th), _ = cv2.getTextSize(label, font, font_scale, font_thickness)
