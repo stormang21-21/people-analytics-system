@@ -610,6 +610,16 @@ def set_feature_settings():
     success = system.settings_manager.update(data)
     return jsonify({'success': success})
 
+
+@app.route('/api/snapshot')
+def get_snapshot():
+    """Get current frame as JPEG"""
+    if system.frame is not None:
+        ret, buffer = cv2.imencode('.jpg', system.frame)
+        if ret:
+            return Response(buffer.tobytes(), mimetype='image/jpeg')
+    return jsonify({'error': 'No frame available'}), 404
+
 # Video feed
 @app.route('/video_feed')
 def video_feed():

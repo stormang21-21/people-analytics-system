@@ -353,12 +353,13 @@
                     <button onclick="setMode('grid')">⊞ Grid</button>
                 </div>
                 <div class="video-container" style="position: relative; width: 100%; height: 400px; background: #000; border-radius: 8px; overflow: hidden;">
-                    <img id="live-video" src="/video_feed" alt="Live camera feed" 
-                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; display: block; min-height: 300px; background: #333; pointer-events: none;"
-                         onload="console.log('Video loaded')" 
-                         onerror="console.error('Video error'); this.style.display='none';">
+                    <img id="snapshot-image" src="/api/snapshot" alt="Camera snapshot" 
+                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; display: block; min-height: 300px; background: #333;"
+                         onload="console.log('Snapshot loaded'); initCanvas();"
+                         onerror="console.error('Snapshot error'); this.src='/static/placeholder.jpg';">
                     <canvas id="zone-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: crosshair; background-color: transparent; pointer-events: auto;"></canvas>
                 </div>
+                <button class="btn btn-primary" onclick="refreshSnapshot()" style="margin-top: 10px; width: 100%;">🔄 Refresh Snapshot</button>
                 
                 <div class="instructions">
                     <strong>Instructions:</strong>
@@ -419,10 +420,47 @@
             }
         }
         
-        // Delay initialization to ensure DOM is ready
+        // Initialize canvas after snapshot loads
+        function initCanvas() {
+            const img = document.getElementById('snapshot-image');
+            const container = document.querySelector('.video-container');
+            
+            // Match canvas size to image/container
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            console.log('Canvas initialized:', canvas.width, 'x', canvas.height);
+            
+            // Draw grid
+            drawGrid();
+        }
+        
+        function drawGrid() {
+            ctx.strokeStyle = '#2a2a3a';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        function refreshSnapshot() {
+            const img = document.getElementById('snapshot-image');
+            img.src = '/api/snapshot?' + Date.now();
+            console.log('Refreshing snapshot...');
+        }
+        
+        // Delay initialization
         setTimeout(function() {
-            resizeCanvas();
-            console.log('Canvas initialized');
+            initCanvas();
         }, 500);
         
         window.addEventListener('resize', resizeCanvas);
@@ -487,23 +525,11 @@ canvas.onclick = function(e) {
         });
         
         function redraw() {
+            // Clear only the drawing, not the image underneath
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Always draw grid for reference
-            ctx.strokeStyle = '#2a2a3a';
-            ctx.lineWidth = 1;
-            for (let x = 0; x < canvas.width; x += 50) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height; y += 50) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
+            // Redraw grid
+            drawGrid();
                 ctx.strokeStyle = '#2a2a3a';
                 ctx.lineWidth = 1;
                 for (let x = 0; x < canvas.width; x += 50) {
