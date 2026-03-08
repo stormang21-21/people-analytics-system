@@ -394,16 +394,22 @@
         let zoomStep = 0.25;
         
         function updateZoom() {
+            console.log('Updating zoom to:', currentZoom);
             const videoFeed = document.querySelector('#video-container img');
             const zoomLevel = document.getElementById('zoom-level');
+            console.log('Video element found:', !!videoFeed);
             if (videoFeed) {
                 videoFeed.style.transform = `scale(${currentZoom})`;
                 videoFeed.style.transformOrigin = 'center center';
+                console.log('Transform applied');
             }
-            zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+            if (zoomLevel) {
+                zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+            }
         }
         
         function zoomIn() {
+            console.log('Zoom In clicked');
             if (currentZoom < maxZoom) {
                 currentZoom += zoomStep;
                 updateZoom();
