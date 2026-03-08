@@ -55,6 +55,7 @@ from src.pose_estimator import PoseEstimator
 from src.action_classifier import ActionClassifier
 from src.alert_system import AlertSystem, AlertType
 from src.analytics import Analytics
+from src.face_recognition import FaceRecognizer
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'people-analytics-secret'
@@ -70,6 +71,7 @@ class AnalyticsSystem:
         self.action_classifier = None
         self.alert_system = AlertSystem()
         self.analytics = Analytics()
+        self.face_recognizer = None
         self.camera = None
         self.is_running = False
         self.frame = None
@@ -94,6 +96,12 @@ class AnalyticsSystem:
             print("Pose and action models loaded")
         except Exception as e:
             print(f"Pose/Action models not loaded: {e}")
+        
+        try:
+            self.face_recognizer = FaceRecognizer()
+            print("Face recognition loaded")
+        except Exception as e:
+            print(f"Face recognition not loaded: {e}")
         print("Models initialized")
     
     def add_camera(self, camera_id: str, name: str, url: str, 
@@ -156,6 +164,15 @@ class AnalyticsSystem:
                     
                     # Draw annotations
                     annotated_frame = frame.copy()
+                    
+                    # Face recognition
+                    if self.face_recognizer:
+                        try:
+                            annotated_frame, faces = self.face_recognizer.process_frame(annotated_frame, draw=True)
+                            # Add face count to analytics
+                            face_count = len(faces)
+                        except Exception as e:
+                            print(f"Face recognition error: {e}")
                     
                     # Pose estimation and action classification
                     actions = {}
@@ -460,6 +477,25 @@ def set_resolution():
     success = system.connect_camera(system.current_camera_id)
     
     return jsonify({'success': success, 'url': new_url})
+
+
+@app.route('/api/faces')
+def get_known_faces():
+    """Get list of known faces"""
+    if system.face_recognizer:
+        return jsonify({
+            'faces': list(system.face_recognizer.known_faces.keys()),
+            'stats': system.face_recognizer.get_recognition_stats()
+        })
+    return jsonify({'faces': [], 'stats': {}})
+
+@app.route('/api/faces/<name>', methods=['DELETE'])
+def remove_face(name):
+    """Remove a known face"""
+    if system.face_recognizer:
+        system.face_recognizer.remove_known_face(name)
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'error': 'Face recognizer not available'})
 
 # Video feed
 @app.route('/video_feed')
