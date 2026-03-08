@@ -210,6 +210,11 @@ system.add_camera(
 )
 
 # Routes
+@app.route('/zones_minimal')
+def zones_minimal():
+    """Minimal zones page - just video"""
+    return render_template('zones_minimal.html')
+
 @app.route('/zones_simple')
 def zones_simple():
     """Simplified zones page for testing"""
