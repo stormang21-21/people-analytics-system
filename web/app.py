@@ -282,6 +282,11 @@ def settings_page():
     """Settings page"""
     return render_template('settings.html')
 
+@app.route('/faces')
+def faces_page():
+    """Face management page"""
+    return render_template('faces.html')
+
 @app.route('/zones_minimal')
 def zones_minimal():
     """Minimal zones page - just video"""
@@ -496,6 +501,41 @@ def remove_face(name):
         system.face_recognizer.remove_known_face(name)
         return jsonify({'success': True})
     return jsonify({'success': False, 'error': 'Face recognizer not available'})
+
+
+@app.route('/api/faces/add', methods=['POST'])
+def add_face():
+    """Add a new face from current frame"""
+    data = request.json
+    name = data.get('name')
+    
+    if not name:
+        return jsonify({'success': False, 'error': 'Name required'})
+    
+    if not system.frame:
+        return jsonify({'success': False, 'error': 'No video frame available'})
+    
+    if not system.face_recognizer:
+        return jsonify({'success': False, 'error': 'Face recognition not available'})
+    
+    # Detect faces in current frame
+    faces = system.face_recognizer.detect_faces(system.frame)
+    
+    if not faces:
+        return jsonify({'success': False, 'error': 'No face detected'})
+    
+    # Use the first detected face
+    face = faces[0]
+    x, y, w, h = face['bbox']
+    face_img = system.frame[y:y+h, x:x+w]
+    
+    if face_img.size == 0:
+        return jsonify({'success': False, 'error': 'Invalid face region'})
+    
+    # Add to database
+    system.face_recognizer.add_known_face(name, face_img)
+    
+    return jsonify({'success': True, 'name': name, 'faces_detected': len(faces)})
 
 # Video feed
 @app.route('/video_feed')

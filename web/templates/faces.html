@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Management - People Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: #1a1a24;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        
+        .navbar h1 {
+            color: #4a9eff;
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: #a0a0b0;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: #4a9eff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h2 {
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #707080;
+        }
+        
+        .card {
+            background: #1a1a24;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #2a2a3a;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card h3 {
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+        }
+        
+        .video-container {
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto 1.5rem;
+            background: #0a0a0f;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .video-container img {
+            width: 100%;
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #a0a0b0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            background: #252535;
+            border: 1px solid #3a3a4a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #4a9eff;
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-danger {
+            background: #f87171;
+            color: white;
+        }
+        
+        .face-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .face-item {
+            background: #252535;
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .face-name {
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+        
+        .status-message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .status-message.success {
+            background: #1a3a2a;
+            color: #4ade80;
+            display: block;
+        }
+        
+        .status-message.error {
+            background: #3a1a1a;
+            color: #f87171;
+            display: block;
+        }
+        
+        .instructions {
+            background: #252535;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: #a0a0b0;
+        }
+        
+        .instructions ol {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🔍 People Analytics System</h1>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/cameras">Cameras</a>
+            <a href="/zones">Zones</a>
+            <a href="/analytics">Analytics</a>
+            <a href="/faces" class="active">Faces</a>
+            <a href="/settings">Settings</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h2>Face Management</h2>
+            <p>Register and manage known faces for recognition</p>
+        </div>
+        
+        <div class="card">
+            <h3>📸 Register New Face</h3>
+            
+            <div class="instructions">
+                <strong>Instructions:</strong>
+                <ol>
+                    <li>Make sure the person's face is clearly visible in the camera</li>
+                    <li>Ensure good lighting on the face</li>
+                    <li>Enter the person's name below</li>
+                    <li>Click "Register Face" to save</li>
+                </ol>
+            </div>
+            
+            <div class="video-container">
+                <img src="/video_feed" alt="Live feed" id="live-feed">
+            </div>
+            
+            <div class="form-group">
+                <label>Person's Name</label>
+                <input type="text" id="face-name" placeholder="e.g., John Smith">
+            </div>
+            
+            <button class="btn btn-primary" onclick="registerFace()">📸 Register Face</button>
+            
+            <div id="status-message" class="status-message"></div>
+        </div>
+        
+        <div class="card">
+            <h3>👥 Known Faces</h3>
+            <div id="face-list" class="face-list">
+                <p style="color: #707080; text-align: center;">Loading...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        async function registerFace() {
+            const nameInput = document.getElementById('face-name');
+            const name = nameInput.value.trim();
+            const statusDiv = document.getElementById('status-message');
+            
+            if (!name) {
+                statusDiv.className = 'status-message error';
+                statusDiv.textContent = 'Please enter a name';
+                return;
+            }
+            
+            statusDiv.className = 'status-message';
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = 'Capturing face...';
+            
+            try {
+                const response = await fetch('/api/faces/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.className = 'status-message success';
+                    statusDiv.textContent = `✅ Face registered: ${result.name}`;
+                    nameInput.value = '';
+                    loadFaces();
+                } else {
+                    statusDiv.className = 'status-message error';
+                    statusDiv.textContent = `❌ ${result.error || 'Failed to register face'}`;
+                }
+            } catch (e) {
+                statusDiv.className = 'status-message error';
+                statusDiv.textContent = `❌ Error: ${e.message}`;
+            }
+        }
+        
+        async function loadFaces() {
+            try {
+                const response = await fetch('/api/faces');
+                const data = await response.json();
+                
+                const list = document.getElementById('face-list');
+                
+                if (data.faces.length === 0) {
+                    list.innerHTML = '<p style="color: #707080; text-align: center;">No faces registered yet</p>';
+                    return;
+                }
+                
+                list.innerHTML = data.faces.map(name => `
+                    <div class="face-item">
+                        <span class="face-name">${name}</span>
+                        <button class="btn btn-danger" onclick="deleteFace('${name}')">Delete</button>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Failed to load faces:', e);
+            }
+        }
+        
+        async function deleteFace(name) {
+            if (!confirm(`Delete face: ${name}?`)) return;
+            
+            try {
+                const response = await fetch(`/api/faces/${name}`, { method: 'DELETE' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadFaces();
+                }
+            } catch (e) {
+                console.error('Failed to delete face:', e);
+            }
+        }
+        
+        // Load faces on page load
+        loadFaces();
+    </script>
+</body>
+</html>
