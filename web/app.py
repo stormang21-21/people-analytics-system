@@ -203,9 +203,11 @@ class AnalyticsSystem:
                             
                             # Classify actions (if enabled)
                             if self.settings_manager.is_enabled('actions') and self.action_classifier:
+                                print(f"Action recognition enabled, classifying {len(poses)} poses...")
                                 for pose, track in zip(poses, tracks):
                                     action = self.action_classifier.update(track.id, pose)
                                     actions[track.id] = action
+                                    print(f"Track {track.id}: action = {action}")
                                     
                                     # Check for alerts (if enabled)
                                     if self.settings_manager.is_enabled('fall') and action == "falling":
