@@ -1,4 +1,4 @@
-# People Analytics System
+# Video Analytics System
 
 Comprehensive video analytics with person detection, tracking, action recognition, and dwell time analysis.
 

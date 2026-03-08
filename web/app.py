@@ -1,5 +1,5 @@
 """
-Flask Web Application for People Analytics System
+Flask Web Application for Video Analytics System
 IP Camera configuration, live view, analytics dashboard
 """
 import os
@@ -33,7 +33,7 @@ def authenticate():
     return Response(
         'Authentication required',
         401,
-        {'WWW-Authenticate': 'Basic realm="People Analytics System"'}
+        {'WWW-Authenticate': 'Basic realm="Video Analytics System"'}
     )
 
 def requires_auth(f):
@@ -581,7 +581,7 @@ def video_feed():
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
-    emit('connected', {'data': 'Connected to People Analytics System'})
+    emit('connected', {'data': 'Connected to Video Analytics System'})
 
 @socketio.on('disconnect')
 def handle_disconnect():
@@ -594,7 +594,7 @@ if __name__ == '__main__':
     
     port = int(os.environ.get('PA_PORT', 5000))
     
-    print("Starting People Analytics Web Server...")
+    print("Starting Video Analytics Web Server...")
     print(f"Open http://localhost:{port} in your browser")
     
     socketio.run(app, host='0.0.0.0', port=port, debug=True, allow_unsafe_werkzeug=True)
