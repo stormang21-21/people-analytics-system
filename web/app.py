@@ -232,7 +232,7 @@ class AnalyticsSystem:
                             label += f" | {dwell_str}"
                         
                         font = cv2.FONT_HERSHEY_SIMPLEX
-                        font_scale = 0.6
+                        font_scale = 0.8
                         thickness = 2
                         
                         (tw, th), _ = cv2.getTextSize(label, font, font_scale, thickness)
