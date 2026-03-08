@@ -9,7 +9,12 @@
 </head>
 <body>
     <h1>Zone Configuration (Minimal)</h1>
-    <img src="/video_feed" alt="Video feed">
-    <p>Video should appear above (green border).</p>
+    <img src="/video_feed" alt="Video feed" 
+         onload="console.log('Video loaded successfully')" 
+         onerror="console.error('Video error:', this.src); this.style.border='2px solid red';"
+         style="min-height: 300px; background: #333;">
+    <p>Video should appear above (green border = loading, red border = error).</p>
+    <p><a href="/video_feed" target="_blank" style="color: #4a9eff;">Direct link to video feed</a></p>
+    <p><a href="/test_video" style="color: #4a9eff;">Go to working test page</a></p>
 </body>
 </html>
