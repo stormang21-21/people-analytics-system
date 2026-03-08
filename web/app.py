@@ -243,7 +243,10 @@ class AnalyticsSystem:
                         dwell_times = self.dwell_tracker.get_dwell_times(track.id)
                         
                         # Draw track ID with better readability
-                        label = f"ID: {track.id}"
+                        action_str = actions.get(track.id, "")
+                            label = f"ID: {track.id}"
+                            if action_str:
+                                label += f" | {action_str}"
                         if dwell_times:
                             dwell_str = ", ".join([f"{z}:{t:.0f}s" 
                                                    for z, t in dwell_times.items()])
