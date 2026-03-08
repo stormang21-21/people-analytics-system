@@ -194,9 +194,12 @@ class AnalyticsSystem:
                     actions = {}
                     if self.settings_manager.is_enabled('pose') and self.pose_estimator:
                         try:
+                            print(f"Pose estimation enabled, estimating...")
                             poses = self.pose_estimator.estimate(frame)
+                            print(f"Pose estimation complete: {len(poses)} poses detected")
                             if self.settings_manager.is_enabled('pose'):
                                 annotated_frame = self.pose_estimator.draw_poses(annotated_frame, poses)
+                                print(f"Pose drawing complete")
                             
                             # Classify actions (if enabled)
                             if self.settings_manager.is_enabled('actions') and self.action_classifier:
