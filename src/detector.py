@@ -105,10 +105,14 @@ class YOLO26Detector:
                 'dog': (255, 165, 0),       # Orange
                 'cat': (255, 192, 203),     # Pink
                 'bird': (0, 191, 255),      # Deep sky blue
-                'cell phone': (255, 0, 0),
-                'laptop': (0, 0, 255),
-                'backpack': (255, 255, 0),
-                'default': (128, 128, 128)
+                'cell phone': (255, 0, 0),  # Red
+                'remote': (255, 255, 0),    # Yellow
+                'laptop': (0, 0, 255),      # Blue
+                'backpack': (128, 0, 128),  # Purple
+                'tv': (0, 128, 128),        # Teal
+                'couch': (128, 128, 0),     # Olive
+                'chair': (128, 0, 0),       # Maroon
+                'default': (128, 128, 128)  # Gray
             }
         
         for det in detections:

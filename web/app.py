@@ -162,11 +162,12 @@ class AnalyticsSystem:
                     # Detect people and objects
                     detections = self.detector.detect_with_objects(frame, conf_threshold=0.3)
                     
-                    # Debug: print all detections
-                    all_names = [d['class_name'] for d in detections['all_detections']]
+                    # Debug: print all detections with confidence
+                    all_info = [(d['class_name'], f"{d['confidence']:.2f}") for d in detections['all_detections']]
                     people_count = len(detections['people'])
                     object_count = len(detections['objects'])
-                    print(f"Frame detections - People: {people_count}, Objects: {object_count}, All: {all_names}")
+                    print(f"Frame detections - People: {people_count}, Objects: {object_count}")
+                    print(f"All detections: {all_info}")
                     
                     # Track
                     tracks = self.tracker.update(detections['people'])
