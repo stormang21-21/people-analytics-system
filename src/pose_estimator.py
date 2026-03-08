@@ -118,7 +118,7 @@ class PoseEstimator:
         return poses
     
     def draw_poses(self, frame: np.ndarray, poses: List[Dict], 
-                   show_skeleton: bool = False, show_keypoints: bool = True) -> np.ndarray:
+                   show_skeleton: bool = False, show_keypoints: bool = False) -> np.ndarray:
         """Draw poses on frame"""
         for pose in poses:
             keypoints = pose['keypoints']
