@@ -490,9 +490,57 @@
                     </label>
                 </div>
             </div>
+            <div class="settings-card">
+                <h3>📹 Camera Resolution</h3>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">Stream Quality</div>
+                        <div class="feature-desc">Select camera stream resolution</div>
+                    </div>
+                </div>
+                
+                <div class="resolution-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div class="resolution-option selected" id="res-high" onclick="selectResolution('high')" style="background: #252535; border: 2px solid #3a3a4a; border-radius: 8px; padding: 1rem; cursor: pointer; text-align: center;">
+                        <h4 style="color: #e0e0e0; margin-bottom: 0.5rem;">High Resolution</h4>
+                        <p style="color: #707080; font-size: 0.85rem;">Main stream (ch. 101)<br>Better quality<br>More bandwidth</p>
+                    </div>
+                    <div class="resolution-option" id="res-low" onclick="selectResolution('low')" style="background: #252535; border: 2px solid #3a3a4a; border-radius: 8px; padding: 1rem; cursor: pointer; text-align: center;">
+                        <h4 style="color: #e0e0e0; margin-bottom: 0.5rem;">Low Resolution</h4>
+                        <p style="color: #707080; font-size: 0.85rem;">Sub stream (ch. 102)<br>Faster processing<br>Less bandwidth</p>
+                    </div>
+                </div>
+                
+                <div class="info-box" style="background: #252535; border-radius: 8px; padding: 1rem; margin-top: 1rem; font-size: 0.9rem; color: #a0a0b0;">
+                    <strong>Current:</strong> <span id="current-res">Loading...</span>
+                </div>
+                
+                <button class="btn btn-primary" onclick="applyResolution()" style="margin-top: 1rem;">Apply Resolution</button>
+            </div>
+            
+            <div class="settings-card">
+                <h3>👥 Face Management</h3>
+                
+                <div class="feature-item">
+                    <div class="feature-info">
+                        <div class="feature-name">Registered Faces</div>
+                        <div class="feature-desc">Manage known faces for recognition</div>
+                    </div>
+                </div>
+                
+                <div id="face-list" style="margin-top: 1rem; max-height: 200px; overflow-y: auto;">
+                    <p style="color: #707080; text-align: center;">Loading faces...</p>
+                </div>
+                
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #2a2a3a;">
+                    <div class="feature-name" style="margin-bottom: 0.5rem;">Add New Face</div>
+                    <input type="text" id="new-face-name" placeholder="Person name" style="width: 100%; padding: 0.5rem; background: #252535; border: 1px solid #3a3a4a; border-radius: 6px; color: #e0e0e0; margin-bottom: 0.5rem;">
+                    <button class="btn btn-primary" onclick="addFace()" style="width: 100%;">📸 Capture & Add Face</button>
+                </div>
+            </div>
         </div>
         
-        <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Save Feature Settings</button>
         
         <div id="status-message" class="status-message"></div>
     </div>
@@ -593,7 +641,140 @@
             }
         }
         
+        // Camera resolution functions
+        let selectedResolution = 'high';
+        
+        function selectResolution(res) {
+            selectedResolution = res;
+            document.querySelectorAll('.resolution-option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('res-' + res).classList.add('selected');
+        }
+        
+        async function loadCameraInfo() {
+            try {
+                const response = await fetch('/api/cameras');
+                const cameras = await response.json();
+                const cam = Object.values(cameras)[0];
+                if (cam) {
+                    const isHigh = cam.url.includes('/101/');
+                    document.getElementById('current-res').textContent = isHigh ? 'High Resolution (ch. 101)' : 'Low Resolution (ch. 102)';
+                    selectResolution(isHigh ? 'high' : 'low');
+                }
+            } catch (e) {
+                console.error('Failed to load camera info:', e);
+            }
+        }
+        
+        async function applyResolution() {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.className = 'status-message';
+            statusDiv.textContent = 'Applying resolution...';
+            statusDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/settings/resolution', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ resolution: selectedResolution })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.className = 'status-message success';
+                    statusDiv.textContent = '✅ Resolution applied! Camera reconnecting...';
+                    setTimeout(loadCameraInfo, 3000);
+                } else {
+                    statusDiv.className = 'status-message error';
+                    statusDiv.textContent = '❌ ' + (result.error || 'Failed');
+                }
+            } catch (e) {
+                statusDiv.className = 'status-message error';
+                statusDiv.textContent = '❌ Error: ' + e.message;
+            }
+        }
+        
+        // Face management functions
+        async function loadFaces() {
+            try {
+                const response = await fetch('/api/faces');
+                const data = await response.json();
+                
+                const list = document.getElementById('face-list');
+                
+                if (!data.faces || data.faces.length === 0) {
+                    list.innerHTML = '<p style="color: #707080; text-align: center;">No faces registered</p>';
+                    return;
+                }
+                
+                list.innerHTML = data.faces.map(name => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #252535; border-radius: 6px; margin-bottom: 0.5rem;">
+                        <span style="color: #e0e0e0;">${name}</span>
+                        <button onclick="deleteFace('${name}')" style="background: #f87171; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Delete</button>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Failed to load faces:', e);
+            }
+        }
+        
+        async function addFace() {
+            const nameInput = document.getElementById('new-face-name');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+            
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.className = 'status-message';
+            statusDiv.textContent = 'Capturing face...';
+            statusDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/faces/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.className = 'status-message success';
+                    statusDiv.textContent = `✅ Face added: ${result.name}`;
+                    nameInput.value = '';
+                    loadFaces();
+                } else {
+                    statusDiv.className = 'status-message error';
+                    statusDiv.textContent = '❌ ' + (result.error || 'Failed to add face');
+                }
+            } catch (e) {
+                statusDiv.className = 'status-message error';
+                statusDiv.textContent = '❌ Error: ' + e.message;
+            }
+        }
+        
+        async function deleteFace(name) {
+            if (!confirm(`Delete face: ${name}?`)) return;
+            
+            try {
+                const response = await fetch(`/api/faces/${name}`, { method: 'DELETE' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadFaces();
+                }
+            } catch (e) {
+                console.error('Failed to delete face:', e);
+            }
+        }
+        
+        // Load everything on page load
         loadSettings();
+        loadCameraInfo();
+        loadFaces();
     </script>
 </body>
 </html>
