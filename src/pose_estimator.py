@@ -74,16 +74,25 @@ class PoseEstimator:
                 
                 bbox = box.xyxy[0].cpu().numpy().tolist()
                 
-                # Extract keypoints
-                kp = kpts.xy.cpu().numpy()
-                kp_conf = kpts.conf.cpu().numpy() if hasattr(kpts, 'conf') else np.ones(kp.shape[0])
+                # Extract keypoints - handle different tensor formats
+                if hasattr(kpts, 'data'):
+                    kp_data = kpts.data.cpu().numpy()
+                else:
+                    kp_data = kpts.xy.cpu().numpy()
                 
                 keypoint_list = []
-                for j in range(kp.shape[0]):
-                    point = kp[j]
-                    pc = kp_conf[j] if j < len(kp_conf) else 1.0
-                    if len(point) >= 2:
-                        keypoint_list.append([float(point[0]), float(point[1]), float(pc)])
+                for j in range(len(kp_data)):
+                    if kp_data.ndim == 3:
+                        # Shape: (num_people, num_keypoints, 3)
+                        point = kp_data[i, j]
+                    else:
+                        # Shape: (num_keypoints, 3) or similar
+                        point = kp_data[j]
+                    
+                    if len(point) >= 3:
+                        keypoint_list.append([float(point[0]), float(point[1]), float(point[2])])
+                    elif len(point) == 2:
+                        keypoint_list.append([float(point[0]), float(point[1]), 1.0])
                     else:
                         keypoint_list.append([0, 0, 0])
                 
