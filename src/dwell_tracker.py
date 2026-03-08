@@ -3,6 +3,7 @@ Dwell Time Tracker
 Track how long people spend in defined zones
 """
 import time
+import cv2
 import numpy as np
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass, field
