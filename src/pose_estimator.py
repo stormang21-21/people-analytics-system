@@ -75,26 +75,39 @@ class PoseEstimator:
                 bbox = box.xyxy[0].cpu().numpy().tolist()
                 
                 # Extract keypoints - handle different tensor formats
-                if hasattr(kpts, 'data'):
-                    kp_data = kpts.data.cpu().numpy()
-                else:
-                    kp_data = kpts.xy.cpu().numpy()
-                
-                keypoint_list = []
-                for j in range(len(kp_data)):
-                    if kp_data.ndim == 3:
-                        # Shape: (num_people, num_keypoints, 3)
-                        point = kp_data[i, j]
+                try:
+                    if hasattr(kpts, 'data'):
+                        kp_data = kpts.data.cpu().numpy()
                     else:
-                        # Shape: (num_keypoints, 3) or similar
-                        point = kp_data[j]
+                        kp_data = kpts.xy.cpu().numpy()
                     
-                    if len(point) >= 3:
-                        keypoint_list.append([float(point[0]), float(point[1]), float(point[2])])
-                    elif len(point) == 2:
-                        keypoint_list.append([float(point[0]), float(point[1]), 1.0])
-                    else:
-                        keypoint_list.append([0, 0, 0])
+                    print(f"Pose {i}: kp_data shape = {kp_data.shape}, ndim = {kp_data.ndim}")
+                    
+                    keypoint_list = []
+                    
+                    # Handle different possible shapes
+                    if kp_data.ndim == 3 and kp_data.shape[0] > i:
+                        # Shape: (num_people, num_keypoints, 3)
+                        for j in range(kp_data.shape[1]):
+                            point = kp_data[i, j]
+                            if len(point) >= 3:
+                                keypoint_list.append([float(point[0]), float(point[1]), float(point[2])])
+                            elif len(point) == 2:
+                                keypoint_list.append([float(point[0]), float(point[1]), 1.0])
+                    elif kp_data.ndim == 2:
+                        # Shape: (num_keypoints, 3)
+                        for j in range(kp_data.shape[0]):
+                            point = kp_data[j]
+                            if len(point) >= 3:
+                                keypoint_list.append([float(point[0]), float(point[1]), float(point[2])])
+                            elif len(point) == 2:
+                                keypoint_list.append([float(point[0]), float(point[1]), 1.0])
+                    
+                    print(f"Pose {i}: extracted {len(keypoint_list)} keypoints")
+                    
+                except Exception as e:
+                    print(f"Error extracting keypoints: {e}")
+                    keypoint_list = []
                 
                 poses.append({
                     'bbox': bbox,
