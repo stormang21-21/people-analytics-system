@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zones - Simple</title>
+    <style>
+        body { background: #0a0a0f; color: #fff; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .video-box { 
+            position: relative; 
+            width: 100%; 
+            height: 400px; 
+            background: #000;
+            border: 2px solid #4a9eff;
+        }
+        .video-box img { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain;
+        }
+        .video-box canvas { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Zone Configuration (Simple)</h1>
+        <div class="video-box">
+            <img id="live-video" src="/video_feed" alt="Live camera feed">
+            <canvas id="zone-canvas"></canvas>
+        </div>
+        <p>Video should appear above. Canvas is transparent overlay.</p>
+    </div>
+    <script>
+        const canvas = document.getElementById('zone-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resize() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        
+        window.addEventListener('resize', resize);
+        resize();
+        
+        // Just draw a simple rectangle to show canvas is working
+        canvas.addEventListener('click', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ctx.fillStyle = 'rgba(74, 158, 255, 0.5)';
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    </script>
+</body>
+</html>
