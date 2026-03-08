@@ -48,6 +48,7 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 from src.detector import YOLO26Detector
+from src.camera_handler import CameraHandler
 from src.tracker import ByteTrackTracker
 from src.dwell_tracker import DwellTimeTracker
 
@@ -104,11 +105,11 @@ class AnalyticsSystem:
         
         # Release existing camera
         if self.camera:
-            self.camera.release()
+            self.camera.disconnect()
         
         # Connect to new camera
-        self.camera = cv2.VideoCapture(url)
-        if self.camera.isOpened():
+        self.camera = CameraHandler(url, camera_info["name"])
+        if self.camera.connect():
             camera_info['status'] = 'connected'
             self.current_camera_id = camera_id
             return True
@@ -127,9 +128,9 @@ class AnalyticsSystem:
     def _processing_loop(self):
         """Main processing loop"""
         while self.is_running:
-            if self.camera and self.camera.isOpened():
-                ret, frame = self.camera.read()
-                if ret:
+            if self.camera and self.camera.is_alive():
+                frame = self.camera.get_frame()
+                if frame is not None:
                     # Detect people and objects
                     detections = self.detector.detect_with_objects(frame)
                     
@@ -187,7 +188,7 @@ class AnalyticsSystem:
             return None
         
         ret, buffer = cv2.imencode('.jpg', self.frame)
-        if ret:
+        if frame is not None:
             return buffer.tobytes()
         return None
     
@@ -195,7 +196,7 @@ class AnalyticsSystem:
         """Stop processing"""
         self.is_running = False
         if self.camera:
-            self.camera.release()
+            self.camera.disconnect()
 
 # Global system instance
 system = AnalyticsSystem()
