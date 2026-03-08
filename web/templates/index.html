@@ -89,12 +89,9 @@
         }
         
         .zoom-controls {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            display: flex;
+            display: inline-flex;
             gap: 5px;
-            z-index: 100;
+            margin-left: 10px;
         }
         
         .zoom-btn {
@@ -117,15 +114,14 @@
         }
         
         .zoom-level {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
             background: rgba(0, 0, 0, 0.7);
             color: white;
             padding: 5px 10px;
             border-radius: 4px;
             font-size: 12px;
-            z-index: 100;
+            display: inline-block;
+            min-width: 45px;
+            text-align: center;
         }
 
         .video-feed {
@@ -288,6 +284,12 @@
                 <div class="video-controls">
                     <button class="btn btn-primary" onclick="startSystem()">▶ Start</button>
                     <button class="btn btn-danger" onclick="stopSystem()">⏹ Stop</button>
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">−</button>
+                        <span class="zoom-level" id="zoom-level">100%</span>
+                        <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">+</button>
+                        <button class="zoom-btn" onclick="resetZoom()" title="Reset">⟲</button>
+                    </div>
                 </div>
             </div>
             
