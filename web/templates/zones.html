@@ -305,7 +305,10 @@
                     <button onclick="setMode('grid')">⊞ Grid</button>
                 </div>
                 <div class="video-container">
-                    <img id="live-video" src="/video_feed" alt="Live camera feed" onload="console.log('Video loaded')" onerror="console.error('Video failed to load'); this.style.display='none'; setMode('grid');">
+                    <img id="live-video" src="/video_feed" alt="Live camera feed" 
+                 onload="console.log('Video loaded')" 
+                 onerror="console.error('Video failed to load'); this.style.display='none'; setMode('grid');"
+                 style="min-height: 300px; background: #333;">
                     <canvas id="zone-canvas"></canvas>
                 </div>
                 
