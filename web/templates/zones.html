@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zone Configuration - People Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: #1a1a24;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        
+        .navbar h1 {
+            color: #4a9eff;
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: #a0a0b0;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: #4a9eff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h2 {
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #707080;
+        }
+        
+        .zone-editor {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+        
+        .canvas-container {
+            background: #1a1a24;
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid #2a2a3a;
+        }
+        
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .canvas-header h3 {
+            color: #e0e0e0;
+        }
+        
+        #zone-canvas {
+            width: 100%;
+            height: 400px;
+            background: #0a0a0f;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+        
+        .controls {
+            background: #1a1a24;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #2a2a3a;
+        }
+        
+        .controls h3 {
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #a0a0b0;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            background: #252535;
+            border: 1px solid #3a3a4a;
+            border-radius: 8px;
+            color: #e0e0e0;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+        
+        .color-option:hover, .color-option.selected {
+            border-color: #e0e0e0;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: #4a9eff;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #3a3a4a;
+            color: #e0e0e0;
+        }
+        
+        .btn-danger {
+            background: #f87171;
+            color: white;
+        }
+        
+        .zone-list {
+            margin-top: 1.5rem;
+        }
+        
+        .zone-item {
+            background: #252535;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .zone-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+        }
+        
+        .zone-name {
+            flex: 1;
+            color: #e0e0e0;
+        }
+        
+        .instructions {
+            background: #252535;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #a0a0b0;
+        }
+        
+        .instructions ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🔍 People Analytics System</h1>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/cameras">Cameras</a>
+            <a href="/zones" class="active">Zones</a>
+            <a href="/analytics">Analytics</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h2>Zone Configuration</h2>
+            <p>Define areas to track dwell time and occupancy</p>
+        </div>
+        
+        <div class="zone-editor">
+            <div class="canvas-container">
+                <div class="canvas-header">
+                    <h3>Draw Zone</h3>
+                    <span id="point-count">0 points</span>
+                </div>
+                <canvas id="zone-canvas"></canvas>
+                
+                <div class="instructions">
+                    <strong>Instructions:</strong>
+                    <ul>
+                        <li>Click on the canvas to add points</li>
+                        <li>Create at least 3 points to form a zone</li>
+                        <li>Click "Save Zone" when done</li>
+                        <li>Click "Clear" to start over</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <h3>Zone Settings</h3>
+                
+                <div class="form-group">
+                    <label>Zone Name</label>
+                    <input type="text" id="zone-name" placeholder="e.g., Main Entrance">
+                </div>
+                
+                <div class="form-group">
+                    <label>Zone Color</label>
+                    <div class="color-picker">
+                        <div class="color-option selected" style="background: #4ade80" data-color="[74, 222, 128]"></div>
+                        <div class="color-option" style="background: #4a9eff" data-color="[74, 158, 255]"></div>
+                        <div class="color-option" style="background: #f87171" data-color="[248, 113, 113]"></div>
+                        <div class="color-option" style="background: #fbbf24" data-color="[251, 191, 36]"></div>
+                        <div class="color-option" style="background: #a78bfa" data-color="[167, 139, 250]"></div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="saveZone()">💾 Save Zone</button>
+                <button class="btn btn-secondary" onclick="clearCanvas()">🗑 Clear</button>
+                
+                <div class="zone-list" id="zone-list">
+                    <!-- Zones will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('zone-canvas');
+        const ctx = canvas.getContext('2d');
+        let points = [];
+        let selectedColor = [74, 222, 128];
+        
+        // Set canvas size
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            redraw();
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Color picker
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedColor = JSON.parse(this.dataset.color);
+            });
+        });
+        
+        // Canvas click
+        canvas.addEventListener('click', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            points.push([Math.round(x), Math.round(y)]);
+            document.getElementById('point-count').textContent = `${points.length} points`;
+            redraw();
+        });
+        
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#2a2a3a';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Draw polygon
+            if (points.length > 0) {
+                ctx.strokeStyle = `rgb(${selectedColor.join(',')})`;
+                ctx.fillStyle = `rgba(${selectedColor.join(',')}, 0.2)`;
+                ctx.lineWidth = 2;
+                
+                ctx.beginPath();
+                ctx.moveTo(points[0][0], points[0][1]);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i][0], points[i][1]);
+                }
+                if (points.length >= 3) {
+                    ctx.closePath();
+                }
+                ctx.fill();
+                ctx.stroke();
+                
+                // Draw points
+                points.forEach((p, i) => {
+                    ctx.beginPath();
+                    ctx.arc(p[0], p[1], 5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgb(${selectedColor.join(',')})`;
+                    ctx.fill();
+                    
+                    // Draw point number
+                    ctx.fillStyle = '#e0e0e0';
+                    ctx.font = '12px sans-serif';
+                    ctx.fillText(i + 1, p[0] + 8, p[1] + 4);
+                });
+            }
+        }
+        
+        function clearCanvas() {
+            points = [];
+            document.getElementById('point-count').textContent = '0 points';
+            redraw();
+        }
+        
+        function saveZone() {
+            const name = document.getElementById('zone-name').value;
+            
+            if (!name) {
+                alert('Please enter a zone name');
+                return;
+            }
+            
+            if (points.length < 3) {
+                alert('Please add at least 3 points to create a zone');
+                return;
+            }
+            
+            const zoneData = {
+                id: 'zone_' + Date.now(),
+                name: name,
+                polygon: points,
+                color: selectedColor
+            };
+            
+            fetch('/api/zones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(zoneData)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Zone saved successfully');
+                    clearCanvas();
+                    document.getElementById('zone-name').value = '';
+                    loadZones();
+                }
+            });
+        }
+        
+        function loadZones() {
+            fetch('/api/zones')
+                .then(r => r.json())
+                .then(zones => {
+                    const list = document.getElementById('zone-list');
+                    
+                    if (Object.keys(zones).length === 0) {
+                        list.innerHTML = '<p style="color: #707080; text-align: center;">No zones configured</p>';
+                        return;
+                    }
+                    
+                    list.innerHTML = '<h4 style="margin: 1rem 0 0.5rem; color: #a0a0b0;">Configured Zones:</h4>';
+                    
+                    for (const [id, zone] of Object.entries(zones)) {
+                        list.innerHTML += `
+                            <div class="zone-item">
+                                <div class="zone-color" style="background: rgb(${zone.color.join(',')})"></div>
+                                <span class="zone-name">${zone.name}</span>
+                                <button class="btn btn-danger btn-small" onclick="deleteZone('${id}')" style="width: auto;">Delete</button>
+                            </div>
+                        `;
+                    }
+                });
+        }
+        
+        function deleteZone(id) {
+            if (!confirm('Delete this zone?')) return;
+            
+            fetch(`/api/zones/${id}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        loadZones();
+                    }
+                });
+        }
+        
+        // Load zones on page load
+        loadZones();
+    </script>
+</body>
+</html>

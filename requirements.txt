@@ -1,0 +1,44 @@
+# Requirements for People Analytics System
+
+# Core
+numpy>=1.24.0
+opencv-python>=4.8.0
+Pillow>=10.0.0
+PyYAML>=6.0
+python-dotenv>=1.0.0
+
+# Deep Learning
+torch>=2.0.0
+torchvision>=0.15.0
+ultralytics>=8.0.200
+
+# Tracking
+lap>=0.4.0
+scipy>=1.11.0
+
+# Action Recognition (optional - heavy)
+# pytorchvideo>=0.1.5  # Uncomment for action recognition
+# slowfast  # Requires custom install
+
+# Web Framework
+flask>=2.3.0
+flask-socketio>=5.3.0
+flask-cors>=4.0.0
+werkzeug>=2.3.0
+
+# Database
+# sqlite3 is built-in, no need to install
+# redis>=4.6.0  # Optional for caching
+
+# Visualization
+matplotlib>=3.7.0
+plotly>=5.15.0
+
+# Utilities
+requests>=2.31.0
+imutils>=0.5.4
+filterpy>=1.4.5
+
+# Development
+pytest>=7.4.0
+black>=23.7.0

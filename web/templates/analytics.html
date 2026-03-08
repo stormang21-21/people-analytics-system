@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - People Analytics</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: #1a1a24;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        
+        .navbar h1 {
+            color: #4a9eff;
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: #a0a0b0;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: #4a9eff;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h2 {
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #707080;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: #1a1a24;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #2a2a3a;
+        }
+        
+        .stat-card h3 {
+            color: #a0a0b0;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4a9eff;
+        }
+        
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+        
+        .positive {
+            color: #4ade80;
+        }
+        
+        .negative {
+            color: #f87171;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .chart-card {
+            background: #1a1a24;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #2a2a3a;
+        }
+        
+        .chart-card h3 {
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        
+        .chart-container {
+            height: 300px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        
+        .data-table th {
+            color: #a0a0b0;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        
+        .data-table td {
+            color: #e0e0e0;
+        }
+        
+        .export-section {
+            background: #1a1a24;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #2a2a3a;
+            margin-top: 1.5rem;
+        }
+        
+        .export-section h3 {
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin-right: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: #4a9eff;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #3a3a4a;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🔍 People Analytics System</h1>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/cameras">Cameras</a>
+            <a href="/zones">Zones</a>
+            <a href="/analytics" class="active">Analytics</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h2>Analytics Dashboard</h2>
+            <p>Historical data and insights</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Visitors Today</h3>
+                <div class="stat-value" id="total-visitors">0</div>
+                <div class="stat-change positive">↑ 12% vs yesterday</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Avg Dwell Time</h3>
+                <div class="stat-value" id="avg-dwell">0s</div>
+                <div class="stat-change negative">↓ 5% vs yesterday</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Peak Occupancy</h3>
+                <div class="stat-value" id="peak-occupancy">0</div>
+                <div class="stat-change">At 14:30</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Active Alerts</h3>
+                <div class="stat-value" id="active-alerts">0</div>
+                <div class="stat-change positive">All clear</div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Visitor Count Over Time</h3>
+                <div id="visitor-chart" class="chart-container"></div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>Zone Occupancy</h3>
+                <div id="zone-chart" class="chart-container"></div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>Dwell Time Distribution</h3>
+                <div id="dwell-chart" class="chart-container"></div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>Hourly Traffic Pattern</h3>
+                <div id="traffic-chart" class="chart-container"></div>
+            </div>
+        </div>
+        
+        <div class="chart-card" style="margin-top: 1.5rem;">
+            <h3>Zone Statistics</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Zone</th>
+                        <th>Total Visits</th>
+                        <th>Current Occupancy</th>
+                        <th>Avg Dwell Time</th>
+                        <th>Total Dwell Time</th>
+                    </tr>
+                </thead>
+                <tbody id="zone-stats-table">
+                    <!-- Data loaded dynamically -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="export-section">
+            <h3>Export Data</h3>
+            <button class="btn btn-primary" onclick="exportJSON()">📄 Export JSON</button>
+            <button class="btn btn-secondary" onclick="exportCSV()">📊 Export CSV</button>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize charts with dark theme
+        const chartLayout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e0e0e0' },
+            margin: { t: 30, r: 30, b: 40, l: 50 }
+        };
+        
+        const chartConfig = { responsive: true, displayModeBar: false };
+        
+        // Visitor count chart
+        Plotly.newPlot('visitor-chart', [{
+            x: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+            y: [0, 2, 15, 45, 38, 12],
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#4a9eff', width: 2 },
+            marker: { size: 6 }
+        }], { ...chartLayout, yaxis: { gridcolor: '#2a2a3a' }, xaxis: { gridcolor: '#2a2a3a' } }, chartConfig);
+        
+        // Zone occupancy pie chart
+        Plotly.newPlot('zone-chart', [{
+            values: [45, 30, 25],
+            labels: ['Entrance', 'Main Hall', 'Checkout'],
+            type: 'pie',
+            marker: { colors: ['#4a9eff', '#4ade80', '#f87171'] }
+        }], chartLayout, chartConfig);
+        
+        // Dwell time histogram
+        Plotly.newPlot('dwell-chart', [{
+            x: [5, 10, 15, 20, 30, 45, 60, 90, 120],
+            y: [12, 25, 35, 28, 20, 15, 8, 5, 2],
+            type: 'bar',
+            marker: { color: '#4ade80' }
+        }], { ...chartLayout, xaxis: { title: 'Dwell Time (seconds)', gridcolor: '#2a2a3a' }, yaxis: { title: 'Count', gridcolor: '#2a2a3a' } }, chartConfig);
+        
+        // Traffic pattern
+        Plotly.newPlot('traffic-chart', [{
+            x: Array.from({length: 24}, (_, i) => `${i}:00`),
+            y: [2, 1, 0, 0, 1, 3, 8, 15, 25, 30, 35, 40, 45, 42, 38, 35, 40, 45, 35, 25, 15, 10, 5, 3],
+            type: 'bar',
+            marker: { color: '#a78bfa' }
+        }], { ...chartLayout, yaxis: { gridcolor: '#2a2a3a' }, xaxis: { gridcolor: '#2a2a3a' } }, chartConfig);
+        
+        // Load real data
+        function loadAnalytics() {
+            fetch('/api/analytics')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('total-visitors').textContent = 
+                        data.current.people_count || 0;
+                    
+                    // Update zone stats table
+                    const tbody = document.getElementById('zone-stats-table');
+                    tbody.innerHTML = '';
+                    
+                    for (const [zoneId, stats] of Object.entries(data.zone_stats)) {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${stats.name}</td>
+                                <td>${stats.total_visits}</td>
+                                <td>${stats.current_occupancy}</td>
+                                <td>${stats.average_dwell_time.toFixed(1)}s</td>
+                                <td>${stats.total_dwell_time.toFixed(1)}s</td>
+                            </tr>
+                        `;
+                    }
+                });
+        }
+        
+        function exportJSON() {
+            fetch('/api/analytics')
+                .then(r => r.json())
+                .then(data => {
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `analytics_${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                });
+        }
+        
+        function exportCSV() {
+            alert('CSV export coming soon');
+        }
+        
+        // Load data on page load
+        loadAnalytics();
+        
+        // Refresh every 5 seconds
+        setInterval(loadAnalytics, 5000);
+    </script>
+</body>
+</html>

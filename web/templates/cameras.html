@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Configuration - People Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: #1a1a24;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        
+        .navbar h1 {
+            color: #4a9eff;
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: #a0a0b0;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: #4a9eff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h2 {
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #707080;
+        }
+        
+        .card {
+            background: #1a1a24;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #2a2a3a;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card h3 {
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #a0a0b0;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            background: #252535;
+            border: 1px solid #3a3a4a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #4a9eff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3a8eef;
+        }
+        
+        .btn-danger {
+            background: #f87171;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #4ade80;
+            color: #0a0a0f;
+        }
+        
+        .camera-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .camera-item {
+            background: #252535;
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .camera-info h4 {
+            color: #e0e0e0;
+            margin-bottom: 0.25rem;
+        }
+        
+        .camera-info p {
+            color: #707080;
+            font-size: 0.85rem;
+        }
+        
+        .camera-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .status-connected {
+            color: #4ade80;
+        }
+        
+        .status-disconnected {
+            color: #707080;
+        }
+        
+        .status-error {
+            color: #f87171;
+        }
+        
+        .camera-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #707080;
+        }
+        
+        .help-text {
+            color: #707080;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🔍 People Analytics System</h1>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/cameras" class="active">Cameras</a>
+            <a href="/zones">Zones</a>
+            <a href="/analytics">Analytics</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h2>Camera Configuration</h2>
+            <p>Add and manage IP cameras for people analytics</p>
+        </div>
+        
+        <div class="card">
+            <h3>➕ Add New Camera</h3>
+            
+            <div class="form-group">
+                <label>Camera Name</label>
+                <input type="text" id="cam-name" placeholder="e.g., Entrance Camera">
+            </div>
+            
+            <div class="form-group">
+                <label>Camera URL</label>
+                <input type="text" id="cam-url" placeholder="rtsp://192.168.1.100:554/stream1">
+                <p class="help-text">Supported formats: RTSP (rtsp://), HTTP (http://), or local device (0, 1, 2)</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Camera Type</label>
+                <select id="cam-type">
+                    <option value="ip">IP Camera (RTSP/HTTP)</option>
+                    <option value="usb">USB/Webcam</option>
+                    <option value="file">Video File</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-primary" onclick="addCamera()">Add Camera</button>
+        </div>
+        
+        <div class="card">
+            <h3>📹 Configured Cameras</h3>
+            <div id="camera-list" class="camera-list">
+                <div class="empty-state">
+                    No cameras configured yet. Add one above.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Load cameras on page load
+        loadCameras();
+        
+        function loadCameras() {
+            fetch('/api/cameras')
+                .then(r => r.json())
+                .then(cameras => {
+                    const list = document.getElementById('camera-list');
+                    
+                    if (Object.keys(cameras).length === 0) {
+                        list.innerHTML = `
+                            <div class="empty-state">
+                                No cameras configured yet. Add one above.
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    list.innerHTML = '';
+                    for (const [id, cam] of Object.entries(cameras)) {
+                        const statusClass = cam.status === 'connected' ? 'status-connected' : 
+                                          cam.status === 'error' ? 'status-error' : 'status-disconnected';
+                        
+                        list.innerHTML += `
+                            <div class="camera-item">
+                                <div class="camera-info">
+                                    <h4>${cam.name}</h4>
+                                    <p>${cam.url} • ${cam.type}</p>
+                                </div>
+                                <div class="camera-status ${statusClass}">
+                                    ● ${cam.status}
+                                </div>
+                                <div class="camera-actions">
+                                    <button class="btn btn-success btn-small" onclick="connectCamera('${id}')">Connect</button>
+                                    <button class="btn btn-danger btn-small" onclick="deleteCamera('${id}')">Delete</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+        }
+        
+        function addCamera() {
+            const name = document.getElementById('cam-name').value;
+            const url = document.getElementById('cam-url').value;
+            const type = document.getElementById('cam-type').value;
+            
+            if (!name || !url) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            fetch('/api/cameras', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, url, type })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('cam-name').value = '';
+                    document.getElementById('cam-url').value = '';
+                    loadCameras();
+                }
+            });
+        }
+        
+        function connectCamera(id) {
+            fetch(`/api/cameras/${id}/connect`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Camera connected successfully');
+                    } else {
+                        alert('Failed to connect to camera');
+                    }
+                    loadCameras();
+                });
+        }
+        
+        function deleteCamera(id) {
+            if (!confirm('Are you sure you want to delete this camera?')) return;
+            
+            fetch(`/api/cameras/${id}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        loadCameras();
+                    }
+                });
+        }
+    </script>
+</body>
+</html>
