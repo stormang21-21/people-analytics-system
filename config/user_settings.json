@@ -3,7 +3,7 @@
   "objects": true,
   "pose": true,
   "actions": true,
-  "faces": true,
+  "faces": false,
   "fall": true,
   "fight": false,
   "loiter": true,
