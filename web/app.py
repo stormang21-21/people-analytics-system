@@ -188,7 +188,7 @@ class AnalyticsSystem:
             return None
         
         ret, buffer = cv2.imencode('.jpg', self.frame)
-        if frame is not None:
+        if ret:
             return buffer.tobytes()
         return None
     
