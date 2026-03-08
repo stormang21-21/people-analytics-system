@@ -347,6 +347,11 @@ def serve_static(filename):
     """Serve static files"""
     return send_from_directory(static_folder, filename)
 
+@app.route('/zones_test')
+def zones_test():
+    """Test zones page"""
+    return render_template('zones_test.html')
+
 @app.route('/')
 @requires_auth
 def index():
