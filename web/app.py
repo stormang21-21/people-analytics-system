@@ -51,6 +51,10 @@ from src.detector import YOLO26Detector
 from src.camera_handler import CameraHandler
 from src.tracker import ByteTrackTracker
 from src.dwell_tracker import DwellTimeTracker
+from src.pose_estimator import PoseEstimator
+from src.action_classifier import ActionClassifier
+from src.alert_system import AlertSystem, AlertType
+from src.analytics import Analytics
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'people-analytics-secret'
@@ -62,6 +66,10 @@ class AnalyticsSystem:
         self.detector = None
         self.tracker = None
         self.dwell_tracker = None
+        self.pose_estimator = None
+        self.action_classifier = None
+        self.alert_system = AlertSystem()
+        self.analytics = Analytics()
         self.camera = None
         self.is_running = False
         self.frame = None
@@ -80,6 +88,12 @@ class AnalyticsSystem:
         self.detector = YOLO26Detector(model_path="yolo26n.pt")
         self.tracker = ByteTrackTracker()
         self.dwell_tracker = DwellTimeTracker()
+        try:
+            self.pose_estimator = PoseEstimator()
+            self.action_classifier = ActionClassifier()
+            print("Pose and action models loaded")
+        except Exception as e:
+            print(f"Pose/Action models not loaded: {e}")
         print("Models initialized")
     
     def add_camera(self, camera_id: str, name: str, url: str, 
@@ -139,6 +153,39 @@ class AnalyticsSystem:
                     
                     # Update dwell times
                     self.dwell_tracker.update(tracks)
+                    
+                    # Pose estimation and action classification
+                    actions = {}
+                    if self.pose_estimator:
+                        poses = self.pose_estimator.estimate(frame)
+                        annotated_frame = self.pose_estimator.draw_poses(annotated_frame, poses)
+                        
+                        # Classify actions
+                        if self.action_classifier:
+                            for pose, track in zip(poses, tracks):
+                                action = self.action_classifier.update(track.id, pose)
+                                actions[track.id] = action
+                                
+                                # Check for alerts
+                                if action == "falling":
+                                    self.alert_system.check_fall(track.id, action)
+                            
+                            # Check for fights
+                            fighter_ids = self.action_classifier.check_fighting(poses, tracks)
+                            if fighter_ids:
+                                self.alert_system.check_fight(fighter_ids)
+                    
+                    # Record analytics
+                    current_time = time.time()
+                    zone_occupancy = {
+                        zid: stats['current_occupancy'] 
+                        for zid, stats in self.dwell_tracker.get_zone_analytics().items()
+                    }
+                    dwell_times = {
+                        track.id: self.dwell_tracker.get_dwell_times(track.id)
+                        for track in tracks
+                    }
+                    self.analytics.record(current_time, len(tracks), zone_occupancy, dwell_times)
                     
                     # Draw annotations
                     annotated_frame = frame.copy()
@@ -328,6 +375,52 @@ def stop_system():
     """Stop processing"""
     system.stop()
     return jsonify({'success': True, 'status': 'stopped'})
+
+
+@app.route('/api/alerts')
+def get_alerts():
+    """Get active alerts"""
+    severity = request.args.get('severity')
+    alerts = system.alert_system.get_active_alerts(severity)
+    return jsonify([{
+        'id': a.id,
+        'type': a.type.value,
+        'message': a.message,
+        'severity': a.severity,
+        'timestamp': a.timestamp,
+        'track_id': a.track_id,
+        'zone_id': a.zone_id,
+        'acknowledged': a.acknowledged
+    } for a in alerts])
+
+@app.route('/api/alerts/<alert_id>/acknowledge', methods=['POST'])
+def acknowledge_alert(alert_id):
+    """Acknowledge an alert"""
+    success = system.alert_system.acknowledge_alert(alert_id)
+    return jsonify({'success': success})
+
+@app.route('/api/alerts/<alert_id>/resolve', methods=['POST'])
+def resolve_alert(alert_id):
+    """Resolve an alert"""
+    success = system.alert_system.resolve_alert(alert_id)
+    return jsonify({'success': success})
+
+@app.route('/api/analytics/current')
+def get_current_analytics():
+    """Get current analytics"""
+    return jsonify(system.analytics.get_current_stats())
+
+@app.route('/api/analytics/daily')
+def get_daily_analytics():
+    """Get daily analytics report"""
+    date = request.args.get('date')
+    return jsonify(system.analytics.get_daily_report(date))
+
+@app.route('/api/analytics/export')
+def export_analytics():
+    """Export analytics to CSV"""
+    filepath = system.analytics.export_csv()
+    return jsonify({'success': True, 'filepath': filepath})
 
 # Video feed
 @app.route('/video_feed')
