@@ -238,7 +238,7 @@ class AnalyticsSystem:
                     annotated_frame = self.dwell_tracker.draw_zones(annotated_frame)
                     
                     # Add track IDs and dwell times
-                    for track in tracks:
+                    for i, track in enumerate(tracks):
                         x1, y1, x2, y2 = map(int, track.bbox)
                         dwell_times = self.dwell_tracker.get_dwell_times(track.id)
                         
@@ -259,14 +259,16 @@ class AnalyticsSystem:
                         (tw, th), _ = cv2.getTextSize(label, font, font_scale, thickness)
                         
                         # Draw black background
-                        cv2.rectangle(annotated_frame, 
-                                    (x1, y1 - th - 8), 
+                        # Calculate vertical offset for multiple tracks
+                        y_offset = i * 30
+
+                                    (x1, y1 - th - 8 - y_offset), 
                                     (x1 + tw + 8, y1), 
                                     (0, 0, 0), -1)
                         
                         # Draw text in bright cyan
                         cv2.putText(annotated_frame, label, 
-                                  (x1 + 4, y1 - 4),
+                                  (x1 + 4, y1 - 4 - y_offset),
                                   font, font_scale, (0, 255, 255), thickness)
                     
                     self.frame = annotated_frame
