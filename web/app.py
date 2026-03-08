@@ -320,6 +320,11 @@ def test_video():
     """Test video feed page"""
     return render_template('test_video.html')
 
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    """Serve static files"""
+    return send_from_directory(static_folder, filename)
+
 @app.route('/')
 @requires_auth
 def index():
