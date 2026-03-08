@@ -260,6 +260,11 @@ system.add_camera(
 )
 
 # Routes
+@app.route('/settings')
+def settings_page():
+    """Settings page"""
+    return render_template('settings.html')
+
 @app.route('/zones_minimal')
 def zones_minimal():
     """Minimal zones page - just video"""
@@ -424,6 +429,37 @@ def export_analytics():
     """Export analytics to CSV"""
     filepath = system.analytics.export_csv()
     return jsonify({'success': True, 'filepath': filepath})
+
+
+@app.route('/api/settings/resolution', methods=['POST'])
+def set_resolution():
+    """Change camera resolution"""
+    data = request.json
+    resolution = data.get('resolution', 'low')
+    
+    if not system.current_camera_id:
+        return jsonify({'success': False, 'error': 'No camera connected'})
+    
+    camera_info = system.cameras.get(system.current_camera_id)
+    if not camera_info:
+        return jsonify({'success': False, 'error': 'Camera not found'})
+    
+    # Update URL based on resolution
+    current_url = camera_info['url']
+    if resolution == 'high':
+        new_url = current_url.replace('/102/', '/101/')
+    else:
+        new_url = current_url.replace('/101/', '/102/')
+    
+    camera_info['url'] = new_url
+    
+    # Reconnect camera with new URL
+    if system.camera:
+        system.camera.disconnect()
+    
+    success = system.connect_camera(system.current_camera_id)
+    
+    return jsonify({'success': success, 'url': new_url})
 
 # Video feed
 @app.route('/video_feed')

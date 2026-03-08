@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - People Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: #1a1a24;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        
+        .navbar h1 {
+            color: #4a9eff;
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: #a0a0b0;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: #4a9eff;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h2 {
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #707080;
+        }
+        
+        .settings-card {
+            background: #1a1a24;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #2a2a3a;
+            margin-bottom: 1.5rem;
+        }
+        
+        .settings-card h3 {
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #a0a0b0;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .resolution-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .resolution-option {
+            background: #252535;
+            border: 2px solid #3a3a4a;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .resolution-option:hover {
+            border-color: #4a9eff;
+        }
+        
+        .resolution-option.selected {
+            border-color: #4a9eff;
+            background: #1a2a3a;
+        }
+        
+        .resolution-option h4 {
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .resolution-option p {
+            color: #707080;
+            font-size: 0.85rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #4a9eff;
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-primary:hover {
+            background: #3a8eef;
+        }
+        
+        .status-message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .status-message.success {
+            background: #1a3a2a;
+            color: #4ade80;
+            display: block;
+        }
+        
+        .status-message.error {
+            background: #3a1a1a;
+            color: #f87171;
+            display: block;
+        }
+        
+        .info-box {
+            background: #252535;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #a0a0b0;
+        }
+        
+        .info-box strong {
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🔍 People Analytics System</h1>
+        <div class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/cameras">Cameras</a>
+            <a href="/zones">Zones</a>
+            <a href="/analytics">Analytics</a>
+            <a href="/settings" class="active">Settings</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h2>Settings</h2>
+            <p>Configure system preferences</p>
+        </div>
+        
+        <div class="settings-card">
+            <h3>📹 Video Resolution</h3>
+            <p style="color: #707080; margin-bottom: 1rem;">Select camera stream quality</p>
+            
+            <div class="form-group">
+                <div class="resolution-options">
+                    <div class="resolution-option selected" data-res="high" onclick="selectResolution('high')">
+                        <h4>High Resolution</h4>
+                        <p>Main stream (ch. 101)<br>Better quality, longer range<br>More bandwidth</p>
+                    </div>
+                    <div class="resolution-option" data-res="low" onclick="selectResolution('low')">
+                        <h4>Low Resolution</h4>
+                        <p>Sub stream (ch. 102)<br>Faster processing<br>Less bandwidth</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <strong>Current camera:</strong> <span id="current-camera">Loading...</span><br>
+                <strong>Current stream:</strong> <span id="current-stream">Loading...</span>
+            </div>
+            
+            <button class="btn btn-primary" onclick="applySettings()">Apply Settings</button>
+            
+            <div id="status-message" class="status-message"></div>
+        </div>
+        
+        <div class="settings-card">
+            <h3>🔔 Alert Settings</h3>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="alert-fall" checked> Fall Detection
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="alert-fight" checked> Fight Detection
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="alert-loitering" checked> Loitering Detection
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedResolution = 'high';
+        
+        function selectResolution(res) {
+            selectedResolution = res;
+            document.querySelectorAll('.resolution-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector(`[data-res="${res}"]`).classList.add('selected');
+        }
+        
+        async function loadCurrentSettings() {
+            try {
+                const response = await fetch('/api/cameras');
+                const cameras = await response.json();
+                
+                const cam = Object.values(cameras)[0];
+                if (cam) {
+                    document.getElementById('current-camera').textContent = cam.name;
+                    const isHighRes = cam.url.includes('/101/');
+                    document.getElementById('current-stream').textContent = isHighRes ? 'High Resolution (ch. 101)' : 'Low Resolution (ch. 102)';
+                    
+                    // Update selection
+                    selectResolution(isHighRes ? 'high' : 'low');
+                }
+            } catch (e) {
+                console.error('Failed to load settings:', e);
+            }
+        }
+        
+        async function applySettings() {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.className = 'status-message';
+            statusDiv.textContent = 'Applying settings...';
+            statusDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/settings/resolution', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ resolution: selectedResolution })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.className = 'status-message success';
+                    statusDiv.textContent = 'Settings applied! Reconnecting camera...';
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    statusDiv.className = 'status-message error';
+                    statusDiv.textContent = 'Failed: ' + (result.error || 'Unknown error');
+                }
+            } catch (e) {
+                statusDiv.className = 'status-message error';
+                statusDiv.textContent = 'Error: ' + e.message;
+            }
+        }
+        
+        // Load current settings on page load
+        loadCurrentSettings();
+    </script>
+</body>
+</html>
