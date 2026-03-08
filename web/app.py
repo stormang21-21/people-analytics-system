@@ -316,7 +316,6 @@ def stop_system():
 
 # Video feed
 @app.route('/video_feed')
-@requires_auth
 def video_feed():
     """MJPEG video stream"""
     def generate():
