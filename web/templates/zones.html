@@ -306,10 +306,10 @@
                 </div>
                 <div class="video-container" style="position: relative; width: 100%; height: 400px; background: #000; border-radius: 8px; overflow: hidden;">
                     <img id="live-video" src="/video_feed" alt="Live camera feed" 
-                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; display: block; min-height: 300px; background: #333;"
+                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; display: block; min-height: 300px; background: #333; pointer-events: none;"
                          onload="console.log('Video loaded')" 
                          onerror="console.error('Video error'); this.style.display='none';">
-                    <canvas id="zone-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: crosshair; background-color: transparent;"></canvas>
+                    <canvas id="zone-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: crosshair; background-color: transparent; pointer-events: auto;"></canvas>
                 </div>
                 
                 <div class="instructions">
