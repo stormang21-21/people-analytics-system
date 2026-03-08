@@ -1,5 +1,5 @@
 {
-  "animals": true,
+  "animals": false,
   "objects": true,
   "pose": true,
   "actions": true,

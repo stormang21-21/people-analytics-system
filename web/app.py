@@ -274,6 +274,7 @@ class AnalyticsSystem:
                     }
                     
                     # Emit to clients
+                    print(f"Emitting analytics: people={self.analytics_data['people_count']}, zones={len(self.analytics_data['zone_occupancy'])}")
                     socketio.emit('analytics_update', self.analytics_data)
                 
             time.sleep(0.033)  # ~30 FPS

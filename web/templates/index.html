@@ -399,8 +399,10 @@
         });
         
         socket.on('analytics_update', function(data) {
-            console.log('Analytics update:', data);
-            document.getElementById('people-count').textContent = data.people_count || 0;
+            console.log('Analytics update received:', data);
+            const peopleCount = data.people_count !== undefined ? data.people_count : 0;
+            console.log('Setting people count to:', peopleCount);
+            document.getElementById('people-count').textContent = peopleCount;
             
             // Update zone occupancy
             const zoneList = document.getElementById('zone-list');
