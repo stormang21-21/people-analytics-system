@@ -89,6 +89,8 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
+            z-index: 1;
+            display: block;
         }
         
         #zone-canvas {
@@ -99,6 +101,8 @@
             height: 100%;
             cursor: crosshair;
             z-index: 10;
+            background: transparent;
+            pointer-events: auto;
         }
         
         .video-toggle {
@@ -300,7 +304,7 @@
                     <button onclick="setMode('grid')">⊞ Grid</button>
                 </div>
                 <div class="video-container">
-                    <img id="live-video" src="/video_feed" alt="Live camera feed">
+                    <img id="live-video" src="/video_feed" alt="Live camera feed" onload="console.log('Video loaded')" onerror="console.error('Video failed to load'); this.style.display='none'; setMode('grid');">
                     <canvas id="zone-canvas"></canvas>
                 </div>
                 
