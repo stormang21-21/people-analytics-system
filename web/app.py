@@ -379,6 +379,16 @@ def zones_page():
     """Zone configuration page"""
     return render_template('zones.html')
 
+@app.route('/zones_debug')
+def zones_debug():
+    """Debug canvas clicks"""
+    return render_template('zones_debug.html')
+
+@app.route('/test')
+def test_page():
+    """Simple canvas test"""
+    return render_template('test.html')
+
 # API Routes
 @app.route('/api/cameras', methods=['GET'])
 def get_cameras():
@@ -438,6 +448,14 @@ def add_zone():
         color=tuple(data.get('color', [0, 255, 0]))
     )
     return jsonify({'success': True})
+
+@app.route('/api/zones/<zone_id>', methods=['DELETE'])
+def delete_zone(zone_id):
+    """Delete a zone"""
+    if zone_id in system.dwell_tracker.zones:
+        del system.dwell_tracker.zones[zone_id]
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'error': 'Zone not found'}), 404
 
 @app.route('/api/analytics', methods=['GET'])
 def get_analytics():

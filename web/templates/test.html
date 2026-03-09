@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Canvas Test</title>
+    <style>
+        body { margin: 20px; font-family: sans-serif; }
+        #canvas-container { 
+            position: relative; 
+            width: 640px; 
+            height: 360px; 
+            border: 3px solid blue;
+            background: #222;
+        }
+        #my-canvas { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            border: 2px solid red;
+            cursor: crosshair;
+            z-index: 10;
+        }
+        #output { 
+            margin-top: 20px; 
+            padding: 10px; 
+            background: #eee; 
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Canvas Click Test</h1>
+    <p>Click on the black canvas below. Red dots should appear.</p>
+    
+    <div id="canvas-container">
+        <canvas id="my-canvas" width="640" height="360"></canvas>
+    </div>
+    
+    <div id="output">Click the canvas...</div>
+    
+    <script>
+        const canvas = document.getElementById('my-canvas');
+        const ctx = canvas.getContext('2d');
+        const output = document.getElementById('output');
+        
+        // Draw background
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, 640, 360);
+        
+        // Draw text
+        ctx.fillStyle = '#0f0';
+        ctx.font = '24px sans-serif';
+        ctx.fillText('CLICK ANYWHERE ON THIS CANVAS', 120, 180);
+        
+        // Simple click handler
+        canvas.onclick = function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            output.innerHTML += '<br>Click at: ' + Math.round(x) + ', ' + Math.round(y);
+            
+            // Draw red dot
+            ctx.fillStyle = '#f00';
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, Math.PI * 2);
+            ctx.fill();
+        };
+        
+        output.innerHTML = 'Canvas ready. Click above!';
+    </script>
+</body>
+</html>
