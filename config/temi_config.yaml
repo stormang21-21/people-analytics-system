@@ -1,0 +1,51 @@
+# VideoPeopleAnalytics_Temi Configuration
+
+# Detection settings
+detection:
+  model: yolov8n.pt
+  confidence_threshold: 0.5
+  person_class_only: true
+
+# Tracking settings
+tracking:
+  iou_threshold: 0.3
+  max_age: 5  # frames to keep lost tracks
+
+# Camera settings
+camera:
+  device_id: 0
+  width: 640
+  height: 480
+  fps: 30
+
+# TEMI-specific settings
+temi:
+  # Speech settings
+  greeting_on_detect: true
+  dwell_alert_speech: true
+  
+  # Movement settings
+  turn_to_person: false
+  follow_person: false
+  
+  # Dwell alerts (seconds)
+  dwell_threshold: 30
+  
+  # WebView settings
+  webview_port: 5002
+  enable_webrtc: true
+
+# Zone settings
+zones:
+  # Define zones as polygons
+  # Example:
+  # entrance:
+  #   name: "Entrance"
+  #   polygon: [[100, 100], [300, 100], [300, 400], [100, 400]]
+
+# Performance settings
+performance:
+  process_every_n_frames: 1
+  resize_width: 320
+  jpeg_quality: 70
+  max_detections: 10

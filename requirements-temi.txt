@@ -1,0 +1,18 @@
+# Lightweight requirements for TEMI robot
+
+# Core
+numpy>=1.21.0
+opencv-python>=4.5.0
+Pillow>=9.0.0
+PyYAML>=5.4.0
+
+# Deep Learning - lightweight only
+torch>=1.9.0
+ultralytics>=8.0.0
+
+# Web Framework
+flask>=2.0.0
+flask-socketio>=5.1.0
+
+# Utilities
+requests>=2.25.0

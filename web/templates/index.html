@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoPeopleAnalytics_Temi</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* TEMI-optimized: Large touch targets */
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 10px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #1a1a24;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4a9eff;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4a9eff 0%, #2563eb 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .status {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .status-item {
+            text-align: center;
+        }
+        
+        .status-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4a9eff;
+        }
+        
+        .status-label {
+            font-size: 0.8rem;
+            color: #707080;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            min-height: 0;
+        }
+        
+        .video-panel {
+            flex: 2;
+            background: #1a1a24;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .video-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+        
+        .live-badge {
+            background: #ff4444;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .connection-status {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .connection-status.connected {
+            color: #4aff4a;
+        }
+        
+        .sidebar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 250px;
+        }
+        
+        .panel {
+            background: #1a1a24;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .panel-title {
+            font-size: 1.1rem;
+            color: #4a9eff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* TEMI-optimized: Large buttons */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 60px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4a9eff 0%, #2563eb 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.02);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: white;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-card {
+            background: #252530;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4a9eff;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #707080;
+            margin-top: 5px;
+        }
+        
+        .zone-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .zone-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #252530;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .zone-name {
+            font-weight: 500;
+        }
+        
+        .zone-count {
+            background: #4a9eff;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        
+        .alerts {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .alert-item {
+            padding: 12px;
+            background: #252530;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #ffaa00;
+        }
+        
+        .alert-time {
+            font-size: 0.75rem;
+            color: #707080;
+        }
+        
+        .alert-message {
+            margin-top: 4px;
+        }
+        
+        /* TEMI-specific: Speech indicator */
+        .temi-speech {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(74, 158, 255, 0.9);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .temi-speech.active {
+            opacity: 1;
+        }
+        
+        /* Responsive for TEMI tablet */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                flex: none;
+                min-width: auto;
+            }
+            
+            .video-panel {
+                flex: none;
+                height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">📹</div>
+                <span>VideoPeopleAnalytics_Temi</span>
+            </div>
+            <div class="status">
+                <div class="status-item">
+                    <div class="status-value" id="people-count">0</div>
+                    <div class="status-label">People</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="zone-count">0</div>
+                    <div class="status-label">Zones</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="video-panel">
+                <img src="/video_feed" class="video-feed" id="video-feed" alt="Live Feed">
+                <div class="video-overlay">
+                    <div class="live-badge" id="live-badge" style="display: none;">LIVE</div>
+                    <div class="connection-status" id="connection-status">Disconnected</div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-title">▶ Controls</div>
+                    <div class="controls">
+                        <button class="btn btn-primary" id="btn-start" onclick="startCamera()">Start</button>
+                        <button class="btn btn-danger" id="btn-stop" onclick="stopCamera()" disabled>Stop</button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">📊 Statistics</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-people">0</div>
+                            <div class="stat-label">Detected</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-total">0</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">🎯 Zones</div>
+                    <div class="zone-list" id="zone-list">
+                        <div style="color: #707080; text-align: center; padding: 20px;">No zones configured</div>
+                    </div>
+                </div>
+                
+                <div class="panel" style="flex: 1;">
+                    <div class="panel-title">🔔 Alerts</div>
+                    <div class="alerts" id="alerts">
+                        <div style="color: #707080; text-align: center; padding: 20px;">No alerts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="temi-speech" id="temi-speech"></div>
+    
+    <script>
+        // TEMI SDK Bridge
+        window.TEMI = {
+            isTemi: function() {
+                return typeof Android !== 'undefined' && Android.speak;
+            },
+            speak: function(text) {
+                if (this.isTemi() && Android.speak) {
+                    Android.speak(text);
+                }
+                console.log('TEMI Speak:', text);
+                showSpeech(text);
+            },
+            goTo: function(location) {
+                if (this.isTemi() && Android.goTo) {
+                    Android.goTo(location);
+                }
+            },
+            turnBy: function(degrees) {
+                if (this.isTemi() && Android.turnBy) {
+                    Android.turnBy(degrees);
+                }
+            }
+        };
+        
+        function showSpeech(text) {
+            const el = document.getElementById('temi-speech');
+            el.textContent = text;
+            el.classList.add('active');
+            setTimeout(() => el.classList.remove('active'), 3000);
+        }
+        
+        // Socket.IO
+        const socket = io();
+        let isRunning = false;
+        
+        socket.on('connect', function() {
+            document.getElementById('connection-status').textContent = 'Connected';
+            document.getElementById('connection-status').classList.add('connected');
+        });
+        
+        socket.on('disconnect', function() {
+            document.getElementById('connection-status').textContent = 'Disconnected';
+            document.getElementById('connection-status').classList.remove('connected');
+        });
+        
+        socket.on('analytics_update', function(data) {
+            document.getElementById('people-count').textContent = data.people_count;
+            document.getElementById('stat-people').textContent = data.people_count;
+            document.getElementById('stat-total').textContent = data.total_detections;
+            updateZones(data.zone_occupancy);
+        });
+        
+        socket.on('person_detected', function(data) {
+            if (data.track_id === 1) {
+                window.TEMI.speak('Hello! Welcome!');
+            }
+            addAlert('Person ' + data.track_id + ' detected');
+        });
+        
+        socket.on('person_lost', function(data) {
+            addAlert('Person ' + data.track_id + ' left');
+        });
+        
+        socket.on('dwell_alert', function(data) {
+            window.TEMI.speak('Please don\'t block the ' + data.zone_name);
+            addAlert('Dwell alert: ' + data.zone_name);
+        });
+        
+        function startCamera() {
+            fetch('/api/start', {method: 'POST'})
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        isRunning = true;
+                        document.getElementById('btn-start').disabled = true;
+                        document.getElementById('btn-stop').disabled = false;
+                        document.getElementById('live-badge').style.display = 'block';
+                        window.TEMI.speak('Camera started');
+                    }
+                });
+        }
+        
+        function stopCamera() {
+            fetch('/api/stop', {method: 'POST'})
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        isRunning = false;
+                        document.getElementById('btn-start').disabled = false;
+                        document.getElementById('btn-stop').disabled = true;
+                        document.getElementById('live-badge').style.display = 'none';
+                        window.TEMI.speak('Camera stopped');
+                    }
+                });
+        }
+        
+        function updateZones(occupancy) {
+            const list = document.getElementById('zone-list');
+            const count = Object.keys(occupancy).length;
+            document.getElementById('zone-count').textContent = count;
+            
+            if (count === 0) {
+                list.innerHTML = '<div style="color: #707080; text-align: center; padding: 20px;">No zones configured</div>';
+                return;
+            }
+            
+            list.innerHTML = Object.entries(occupancy).map(([id, count]) => `
+                <div class="zone-item">
+                    <span class="zone-name">Zone ${id}</span>
+                    <span class="zone-count">${count}</span>
+                </div>
+            `).join('');
+        }
+        
+        function addAlert(message) {
+            const alerts = document.getElementById('alerts');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = 'alert-item';
+            div.innerHTML = `<div class="alert-time">${time}</div><div class="alert-message">${message}</div>`;
+            alerts.insertBefore(div, alerts.firstChild);
+            if (alerts.children.length > 10) {
+                alerts.removeChild(alerts.lastChild);
+            }
+        }
+        
+        // Check status on load
+        fetch('/api/status')
+            .then(r => r.json())
+            .then(data => {
+                if (data.is_running) {
+                    isRunning = true;
+                    document.getElementById('btn-start').disabled = true;
+                    document.getElementById('btn-stop').disabled = false;
+                    document.getElementById('live-badge').style.display = 'block';
+                }
+            });
+    </script>
+</body>
+</html>

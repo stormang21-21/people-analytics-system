@@ -1,0 +1,13 @@
+{
+  "animals": false,
+  "objects": true,
+  "pose": true,
+  "actions": true,
+  "faces": false,
+  "fall": true,
+  "fight": false,
+  "loiter": true,
+  "dwell": true,
+  "analytics": true,
+  "confidence_threshold": 0.3
+}
