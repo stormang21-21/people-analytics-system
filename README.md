@@ -1,4 +1,4 @@
-# Video Analytics System
+# VideoPeopleAnalytics
 
 Comprehensive video analytics with person detection, tracking, action recognition, and dwell time analysis.
 
@@ -16,7 +16,7 @@ Comprehensive video analytics with person detection, tracking, action recognitio
 ## Architecture
 
 ```
-people-analytics-system/
+VideoPeopleAnalytics/
 ├── src/
 │   ├── detector.py      # YOLO26 detection wrapper
 │   ├── tracker.py       # ByteTrack multi-object tracking

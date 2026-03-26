@@ -1,5 +1,5 @@
 """
-Flask Web Application for Video Analytics System
+Flask Web Application for VideoPeopleAnalytics
 IP Camera configuration, live view, analytics dashboard
 """
 import os
@@ -657,7 +657,7 @@ def video_feed():
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
-    emit('connected', {'data': 'Connected to Video Analytics System'})
+    emit('connected', {'data': 'Connected to VideoPeopleAnalytics'})
 
 @socketio.on('disconnect')
 def handle_disconnect():
