@@ -3,9 +3,9 @@
 
 cameras:
   cam_01:
-    name: "Main Camera"
-    url: "rtsp://admin:PRZROZ@192.168.6.93:554/Streaming/channels/102/"
-    type: "ip"
+    name: "Webcam"
+    url: "0"
+    type: "usb"
     enabled: true
     
   # Example additional cameras:

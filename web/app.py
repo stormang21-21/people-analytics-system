@@ -56,6 +56,7 @@ from src.action_classifier import ActionClassifier
 from src.alert_system import AlertSystem, AlertType
 from src.analytics import Analytics
 from src.face_recognition import FaceRecognizer
+from src.demographics import DemographicsAnalyzer
 from src.settings_manager import SettingsManager
 
 # Static folder setup
@@ -77,18 +78,22 @@ class AnalyticsSystem:
         self.alert_system = AlertSystem()
         self.analytics = Analytics()
         self.face_recognizer = None
+        self.demographics = None
         self.settings_manager = SettingsManager()
-        self.camera = None
+        self.cameras = {}  # Multiple camera handlers
+        self.camera = None  # Primary active camera
         self.is_running = False
         self.frame = None
+        self.frames = {}  # Frames from all cameras
         self.analytics_data = {
             'people_count': 0,
             'dwell_times': {},
             'zone_occupancy': {},
             'alerts': []
         }
-        self.cameras = {}
+        self.cameras_config = {}  # Camera configurations
         self.current_camera_id = None
+        self.active_cameras = set()  # Set of active camera IDs
     
     def init_models(self):
         """Initialize detection and tracking models"""
@@ -108,12 +113,19 @@ class AnalyticsSystem:
             print("Face recognition loaded")
         except Exception as e:
             print(f"Face recognition not loaded: {e}")
+        
+        try:
+            self.demographics = DemographicsAnalyzer()
+            print("Demographics analyzer loaded")
+        except Exception as e:
+            print(f"Demographics analyzer not loaded: {e}")
+        
         print("Models initialized")
     
     def add_camera(self, camera_id: str, name: str, url: str, 
                    camera_type: str = "ip"):
-        """Add IP camera configuration"""
-        self.cameras[camera_id] = {
+        """Add camera configuration"""
+        self.cameras_config[camera_id] = {
             'id': camera_id,
             'name': name,
             'url': url,
@@ -121,29 +133,67 @@ class AnalyticsSystem:
             'status': 'disconnected',
             'added_at': datetime.now().isoformat()
         }
-        print(f"Added camera: {name} ({url})")
+        print(f"Added camera config: {name} ({url})")
     
     def connect_camera(self, camera_id: str):
-        """Connect to camera"""
-        if camera_id not in self.cameras:
+        """Connect to camera (supports multiple cameras)"""
+        if camera_id not in self.cameras_config:
             return False
         
-        camera_info = self.cameras[camera_id]
+        camera_info = self.cameras_config[camera_id]
         url = camera_info['url']
         
-        # Release existing camera
-        if self.camera:
-            self.camera.disconnect()
+        # Disconnect existing camera with same ID
+        if camera_id in self.cameras:
+            self.cameras[camera_id].disconnect()
+            del self.cameras[camera_id]
         
-        # Connect to new camera
-        self.camera = CameraHandler(url, camera_info["name"])
-        if self.camera.connect():
-            camera_info['status'] = 'connected'
-            self.current_camera_id = camera_id
+        # Connect to new camera with 2K capture and 720p processing
+        camera_handler = CameraHandler(
+            url, 
+            camera_info["name"],
+            capture_resolution=(2560, 1440),  # 2K for display
+            processing_resolution=(1280, 720)  # 720p for AI processing
+        )
+        if camera_handler.connect():
+            self.cameras[camera_id] = camera_handler
+            self.cameras_config[camera_id]['status'] = 'connected'
+            self.active_cameras.add(camera_id)
+            # Set as primary if no primary exists
+            if self.current_camera_id is None:
+                self.current_camera_id = camera_id
+                self.camera = camera_handler
             return True
         else:
             camera_info['status'] = 'error'
             return False
+    
+    def disconnect_camera(self, camera_id: str):
+        """Disconnect a specific camera"""
+        if camera_id in self.cameras:
+            self.cameras[camera_id].disconnect()
+            del self.cameras[camera_id]
+            self.active_cameras.discard(camera_id)
+            self.cameras_config[camera_id]['status'] = 'disconnected'
+            
+            # Update primary camera if needed
+            if self.current_camera_id == camera_id:
+                if self.active_cameras:
+                    self.current_camera_id = next(iter(self.active_cameras))
+                    self.camera = self.cameras.get(self.current_camera_id)
+                else:
+                    self.current_camera_id = None
+                    self.camera = None
+            return True
+        return False
+    
+    def switch_camera(self, camera_id: str):
+        """Switch primary camera for viewing"""
+        if camera_id in self.cameras and camera_id in self.active_cameras:
+            self.current_camera_id = camera_id
+            self.camera = self.cameras[camera_id]
+            return True
+        return False
     
     def start_processing(self):
         """Start video processing loop"""
@@ -157,7 +207,10 @@ class AnalyticsSystem:
         """Main processing loop"""
         while self.is_running:
             if self.camera and self.camera.is_alive():
-                frame = self.camera.get_frame()
+                # Get processing frame (scaled down) for AI
+                frame = self.camera.get_processing_frame()
+                # Get full frame for display
+                full_frame = self.camera.get_frame()
                 if frame is not None:
                     # Detect people and objects
                     detections = self.detector.detect_with_objects(frame, conf_threshold=0.3)
@@ -272,7 +325,19 @@ class AnalyticsSystem:
                                   (x1 + 4, y1 - 4 - y_offset),
                                   font, font_scale, (0, 255, 255), thickness)
                     
-                    self.frame = annotated_frame
+                    # Scale annotations back to full resolution for display
+                    if full_frame is not None:
+                        # Calculate scale factor
+                        scale_x = full_frame.shape[1] / frame.shape[1]
+                        scale_y = full_frame.shape[0] / frame.shape[0]
+                        
+                        # Resize annotated frame to full resolution
+                        annotated_full = cv2.resize(annotated_frame, 
+                                                    (full_frame.shape[1], full_frame.shape[0]),
+                                                    interpolation=cv2.INTER_LINEAR)
+                        self.frame = annotated_full
+                    else:
+                        self.frame = annotated_frame
                     
                     # Update analytics
                     self.analytics_data = {
@@ -311,12 +376,12 @@ class AnalyticsSystem:
 # Global system instance
 system = AnalyticsSystem()
 
-# Add default IP camera
+# Add default webcam
 system.add_camera(
     camera_id="cam_01",
-    name="Main Camera",
-    url="rtsp://admin:PRZROZ@192.168.6.93:554/Streaming/channels/102/",
-    camera_type="ip"
+    name="Webcam",
+    url="0",
+    camera_type="usb"
 )
 
 # Routes
@@ -393,7 +458,7 @@ def test_page():
 @app.route('/api/cameras', methods=['GET'])
 def get_cameras():
     """Get all cameras"""
-    return jsonify(system.cameras)
+    return jsonify(system.cameras_config)
 
 @app.route('/api/cameras', methods=['POST'])
 def add_camera():
@@ -419,10 +484,32 @@ def connect_camera(camera_id):
 @app.route('/api/cameras/<camera_id>', methods=['DELETE'])
 def delete_camera(camera_id):
     """Delete camera"""
-    if camera_id in system.cameras:
-        del system.cameras[camera_id]
+    # Disconnect first if connected
+    system.disconnect_camera(camera_id)
+    if camera_id in system.cameras_config:
+        del system.cameras_config[camera_id]
         return jsonify({'success': True})
     return jsonify({'success': False, 'error': 'Camera not found'}), 404
+
+@app.route('/api/cameras/<camera_id>/disconnect', methods=['POST'])
+def disconnect_camera(camera_id):
+    """Disconnect camera"""
+    success = system.disconnect_camera(camera_id)
+    return jsonify({'success': success})
+
+@app.route('/api/cameras/<camera_id>/switch', methods=['POST'])
+def switch_camera(camera_id):
+    """Switch to camera as primary"""
+    success = system.switch_camera(camera_id)
+    return jsonify({'success': success})
+
+@app.route('/api/cameras/active', methods=['GET'])
+def get_active_cameras():
+    """Get list of active cameras"""
+    return jsonify({
+        'active': list(system.active_cameras),
+        'current': system.current_camera_id
+    })
 
 @app.route('/api/zones', methods=['GET'])
 def get_zones():
@@ -638,16 +725,119 @@ def get_snapshot():
             return Response(buffer.tobytes(), mimetype='image/jpeg')
     return jsonify({'error': 'No frame available'}), 404
 
+
+@app.route('/api/demographics', methods=['GET'])
+def get_demographics():
+    """Get demographic statistics"""
+    if system.demographics:
+        return jsonify(system.demographics.get_session_stats())
+    return jsonify({'error': 'Demographics not available'}), 404
+
+
+@app.route('/api/demographics/current', methods=['GET'])
+def get_current_demographics():
+    """Get current frame demographics"""
+    if system.frame is None:
+        return jsonify({'error': 'No video frame available'}), 404
+    
+    if system.demographics is None:
+        return jsonify({'error': 'Demographics analyzer not loaded'}), 404
+    
+    frame = system.frame.copy()
+    faces = system.demographics.detect_faces(frame)
+    
+    results = []
+    for face_bbox in faces:
+        x1, y1, x2, y2 = face_bbox
+        face_img = frame[y1:y2, x1:x2]
+        demo = system.demographics.analyze_face(face_img)
+        demo['bbox'] = face_bbox
+        results.append(demo)
+        system.demographics.update_stats(demo)
+    
+    return jsonify({
+        'faces_detected': len(faces),
+        'demographics': results
+    })
+
+# Camera permission page
+@app.route('/camera_permission')
+def camera_permission():
+    """Page to request camera permission from browser"""
+    return '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera Permission</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        video { width: 640px; height: 480px; border: 2px solid #333; margin: 20px auto; display: block; }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        button:hover { background: #0056b3; }
+        #status { margin: 20px; font-size: 16px; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🎥 Camera Permission Request</h1>
+    <p>Click the button below to grant camera access for People Analytics</p>
+    <button id="requestBtn" onclick="requestCamera()">Request Camera Permission</button>
+    <div id="status"></div>
+    <video id="video" autoplay playsinline></video>
+
+    <script>
+        async function requestCamera() {
+            const status = document.getElementById('status');
+            const video = document.getElementById('video');
+            const btn = document.getElementById('requestBtn');
+            
+            try {
+                status.textContent = 'Requesting camera access...';
+                status.className = '';
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                status.textContent = '✅ SUCCESS: Camera access granted! You can now use the webcam with People Analytics.';
+                status.className = 'success';
+                btn.textContent = 'Camera Active';
+                btn.disabled = true;
+            } catch (err) {
+                status.textContent = '❌ FAILED: ' + err.message;
+                status.className = 'error';
+            }
+        }
+    </script>
+</body>
+</html>
+    '''
+
 # Video feed
 @app.route('/video_feed')
 def video_feed():
-    """MJPEG video stream"""
+    """MJPEG video stream - primary camera"""
     def generate():
         while True:
             frame_bytes = system.get_frame_bytes()
             if frame_bytes:
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+            time.sleep(0.033)
+    
+    return Response(generate(),
+                   mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/video_feed/<camera_id>')
+def video_feed_camera(camera_id):
+    """MJPEG video stream - specific camera"""
+    def generate():
+        while True:
+            if camera_id in system.cameras:
+                frame = system.cameras[camera_id].get_frame()
+                if frame is not None:
+                    ret, buffer = cv2.imencode('.jpg', frame)
+                    if ret:
+                        yield (b'--frame\r\n'
+                               b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
             time.sleep(0.033)
     
     return Response(generate(),
@@ -669,6 +859,14 @@ if __name__ == '__main__':
     templates_dir.mkdir(exist_ok=True)
     
     port = int(os.environ.get('PA_PORT', 5000))
+    
+    # Add default webcam
+    system.add_camera(
+        camera_id="cam_01",
+        name="Webcam",
+        url="0",
+        camera_type="usb"
+    )
     
     print("Starting Video Analytics Web Server...")
     print(f"Open http://localhost:{port} in your browser")

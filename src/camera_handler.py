@@ -12,11 +12,16 @@ from typing import Optional, Callable
 class CameraHandler:
     """Robust camera handler with auto-reconnection and buffer management"""
     
-    def __init__(self, url: str, name: str = "Camera"):
+    def __init__(self, url: str, name: str = "Camera", 
+                 capture_resolution: tuple = (2560, 1440),
+                 processing_resolution: tuple = (1280, 720)):
         self.url = url
         self.name = name
+        self.capture_resolution = capture_resolution  # Full resolution for display
+        self.processing_resolution = processing_resolution  # Scaled down for AI processing
         self.cap: Optional[cv2.VideoCapture] = None
-        self.frame: Optional[np.ndarray] = None
+        self.frame: Optional[np.ndarray] = None  # Full resolution frame
+        self.processing_frame: Optional[np.ndarray] = None  # Scaled frame for AI
         self.is_running = False
         self.is_connected = False
         self.capture_thread: Optional[threading.Thread] = None
@@ -35,11 +40,27 @@ class CameraHandler:
         self.disconnect()
         
         # Create capture with buffer settings
-        self.cap = cv2.VideoCapture(self.url)
+        # Handle webcam index (0, 1, 2) vs URL string
+        url = self.url
+        if url.isdigit():
+            url = int(url)
+            print(f"[{self.name}] Using webcam index: {url}")
+        self.cap = cv2.VideoCapture(url)
         
         # RTSP optimizations to prevent hanging
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Minimize buffer
         self.cap.set(cv2.CAP_PROP_FPS, 15)  # Limit FPS
+        
+        # Set capture resolution (full resolution)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.capture_resolution[0])
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.capture_resolution[1])
+        
+        # Get actual resolution
+        actual_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        actual_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        actual_fps = self.cap.get(cv2.CAP_PROP_FPS)
+        print(f"[{self.name}] Capture Resolution: {int(actual_width)}x{int(actual_height)} @ {actual_fps}fps")
+        print(f"[{self.name}] Processing Resolution: {self.processing_resolution[0]}x{self.processing_resolution[1]}")
         
         # Check connection
         if self.cap.isOpened():
@@ -88,7 +109,13 @@ class CameraHandler:
             
             if ret and frame is not None:
                 with self.lock:
-                    self.frame = frame
+                    self.frame = frame.copy()
+                    # Create scaled down frame for AI processing
+                    self.processing_frame = cv2.resize(
+                        frame, 
+                        self.processing_resolution, 
+                        interpolation=cv2.INTER_AREA
+                    )
                 self.last_frame_time = time.time()
                 self.reconnect_attempts = 0
             else:
@@ -108,9 +135,14 @@ class CameraHandler:
             self.connect()
     
     def get_frame(self) -> Optional[np.ndarray]:
-        """Get latest frame (thread-safe)"""
+        """Get latest frame - full resolution for display (thread-safe)"""
         with self.lock:
             return self.frame.copy() if self.frame is not None else None
+    
+    def get_processing_frame(self) -> Optional[np.ndarray]:
+        """Get latest frame - scaled down for AI processing (thread-safe)"""
+        with self.lock:
+            return self.processing_frame.copy() if self.processing_frame is not None else None
     
     def is_alive(self) -> bool:
         """Check if camera connection is alive"""

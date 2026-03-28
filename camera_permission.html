@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera Permission</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        video { width: 640px; height: 480px; border: 2px solid #333; margin: 20px auto; }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; }
+        #status { margin: 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>Camera Permission Request</h1>
+    <p>Click the button below to grant camera access for People Analytics</p>
+    <button id="requestBtn" onclick="requestCamera()">Request Camera Permission</button>
+    <div id="status"></div>
+    <video id="video" autoplay playsinline></video>
+
+    <script>
+        async function requestCamera() {
+            const status = document.getElementById('status');
+            const video = document.getElementById('video');
+            const btn = document.getElementById('requestBtn');
+            
+            try {
+                status.textContent = 'Requesting camera access...';
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                status.textContent = 'SUCCESS: Camera access granted!';
+                status.style.color = 'green';
+                btn.textContent = 'Camera Active';
+                btn.disabled = true;
+            } catch (err) {
+                status.textContent = 'FAILED: ' + err.message;
+                status.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>

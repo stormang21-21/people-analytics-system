@@ -252,6 +252,32 @@
             font-size: 0.85rem;
         }
         
+        .demographics-stats {
+            margin-top: 1rem;
+        }
+        
+        .demo-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        
+        .demo-row:last-child {
+            border-bottom: none;
+        }
+        
+        .demo-label {
+            color: #a0a0b0;
+            font-size: 0.9rem;
+        }
+        
+        .demo-value {
+            color: #4a9eff;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
         .status-indicator {
             display: inline-flex;
             align-items: center;
@@ -358,6 +384,24 @@
                     <h3>Average Dwell Time</h3>
                     <div class="stat-value" id="avg-dwell">0s</div>
                 </div>
+                
+                <div class="stat-card">
+                    <h3>Demographics</h3>
+                    <div class="demographics-stats" id="demographics">
+                        <div class="demo-row">
+                            <span class="demo-label">Avg Age:</span>
+                            <span class="demo-value" id="avg-age">--</span>
+                        </div>
+                        <div class="demo-row">
+                            <span class="demo-label">Gender:</span>
+                            <span class="demo-value" id="gender-dist">--</span>
+                        </div>
+                        <div class="demo-row">
+                            <span class="demo-label">Faces:</span>
+                            <span class="demo-value" id="faces-count">--</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -392,6 +436,32 @@
                 // Silent fail - WebSocket is primary
             }
         }, 2000);
+        
+        // Poll demographics every 5 seconds
+        setInterval(async function() {
+            try {
+                const response = await fetch('/api/demographics');
+                const data = await response.json();
+                if (data && data.total_faces !== undefined) {
+                    document.getElementById('faces-count').textContent = data.total_faces;
+                    document.getElementById('avg-age').textContent = data.avg_age > 0 ? data.avg_age + ' yrs' : '--';
+                    
+                    // Format gender distribution
+                    const genderDist = data.gender_distribution;
+                    if (genderDist && Object.keys(genderDist).length > 0) {
+                        const total = Object.values(genderDist).reduce((a, b) => a + b, 0);
+                        const genderText = Object.entries(genderDist)
+                            .map(([g, c]) => `${g}: ${Math.round(c/total*100)}%`)
+                            .join(', ');
+                        document.getElementById('gender-dist').textContent = genderText;
+                    } else {
+                        document.getElementById('gender-dist').textContent = '--';
+                    }
+                }
+            } catch (e) {
+                // Silent fail
+            }
+        }, 5000);
         
         socket.on('disconnect', function() {
             console.log('Disconnected from server');

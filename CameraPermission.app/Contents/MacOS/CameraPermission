@@ -1,0 +1,24 @@
+#!/bin/bash
+# Camera Permission Helper App
+
+cd ~/people-analytics-system
+source venv/bin/activate
+
+# Test camera access
+python3 -c "
+import cv2
+import time
+print('Requesting camera access...')
+cap = cv2.VideoCapture(0)
+if cap.isOpened():
+    print('SUCCESS: Camera is accessible!')
+    ret, frame = cap.read()
+    if ret:
+        print(f'Frame captured: {frame.shape}')
+    cap.release()
+else:
+    print('FAILED: Camera not accessible')
+"
+
+# Keep window open
+read -p "Press Enter to close..."
